@@ -139,7 +139,7 @@
     <option value="">-- Select Staff Name (Required) --</option>
     <option value="Nihal">Nihal</option>
     <option value="Ameena Nasser">Ameena Nasser</option>
-    <option value="Hiba">Hiba</option>
+    <option value="Hiba Resmin">Hiba Resmin</option>
     <option value="Shahid">Shahid</option>
   </select>
 
@@ -197,7 +197,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Load verified loans list live
+  // Load verified loans list live with latest first
   function loadLoans() {
     const loansRef = ref(db, "loans");
 
@@ -209,7 +209,8 @@
       let totalCount = 0;
 
       if (data) {
-        Object.keys(data).forEach((key) => {
+        // Reverse keys to show latest submitted first
+        Object.keys(data).reverse().forEach((key) => {
           let loan = data[key];
           totalCount++;
 
