@@ -19,7 +19,7 @@
       box-shadow: 0px 0px 12px rgba(0,0,0,0.2);
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -91,7 +91,7 @@
     #searchBox {
       width: 400px;
       padding: 10px;
-      margin:  15px auto;
+      margin: 15px auto;
       display: block;
       border-radius: 5px;
       border: 1px solid #aaa;
@@ -130,11 +130,20 @@
     <h3 style="margin-top:10px;">Loan Verification Entry</h3>
   </div>
 
-  <input type="text" id="name" placeholder="Customer Name" required>
-  <input type="text" id="loanNo" placeholder="Loan Number" required>
-  <input type="number" id="amount" placeholder="Loan Amount" required>
-  <input type="text" id="checkedBy" placeholder="Checked By (Staff Name)" required>
-  <textarea id="remarks" placeholder="Remarks"></textarea>
+  <input type="text" id="name" placeholder="Customer Name (Optional)">
+  <input type="text" id="loanNo" placeholder="Loan Number (Required)" required>
+  <input type="number" id="amount" placeholder="Loan Amount (Optional)">
+
+  <!-- DROPDOWN FOR CHECKED BY -->
+  <select id="checkedBy" required>
+    <option value="">-- Select Staff Name (Required) --</option>
+    <option value="Nihal">Nihal</option>
+    <option value="Ameena Nasser">Ameena Nasser</option>
+    <option value="Hiba">Hiba</option>
+    <option value="Shahid">Shahid</option>
+  </select>
+
+  <textarea id="remarks" placeholder="Remarks (Optional)"></textarea>
 
   <button onclick="saveData()">Submit Verified Loan</button>
 
@@ -165,7 +174,7 @@
 
   <div class="footer">
     Prepared by:<br>
-    <strong>Varma & Varma Chartered Accountants</strong>
+    <strong>Nihal Shalu</strong>
   </div>
 
 </div>
@@ -235,8 +244,9 @@
     let checkedBy = document.getElementById("checkedBy").value.trim();
     let remarks = document.getElementById("remarks").value.trim();
 
-    if (name === "" || loanNo === "" || amount === "" || checkedBy === "") {
-      document.getElementById("msg").innerHTML = "❌ Please fill all required fields!";
+    // Only Loan No and Checked By are required
+    if (loanNo === "" || checkedBy === "") {
+      document.getElementById("msg").innerHTML = "❌ Loan Number and Checked By are mandatory!";
       document.getElementById("msg").style.color = "red";
       return;
     }
@@ -265,6 +275,7 @@
       document.getElementById("msg").innerHTML = "✅ Loan Verified & Saved Successfully!";
       document.getElementById("msg").style.color = "green";
 
+      // Clear fields after save
       document.getElementById("name").value = "";
       document.getElementById("loanNo").value = "";
       document.getElementById("amount").value = "";
