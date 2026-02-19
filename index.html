@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>KSBCDC Internal Audit - Document Verification</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      max-width: 950px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0px 0px 12px rgba(0,0,0,0.2);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: darkgreen;
+    }
+
+    #msg {
+      font-weight: bold;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .header h2 {
+      margin: 0;
+      color: #222;
+    }
+
+    .header span {
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 20px;
+      color: #444;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    th {
+      background: black;
+      color: white;
+    }
+
+    #searchBox {
+      width: 400px;
+      padding: 10px;
+      margin: 15px auto;
+      display: block;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+
+    .section-title {
+      margin-top: 35px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #222;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <div class="header">
+    <h2>
+      KSBCDC INTERNAL AUDIT<br>
+      <span>Document Verification</span>
+    </h2>
+    <h3 style="margin-top:10px;">Loan Verification Entry</h3>
+  </div>
+
+  <input type="text" id="name" placeholder="Customer Name" required>
+  <input type="text" id="loanNo" placeholder="Loan Number" required>
+  <input type="number" id="amount" placeholder="Loan Amount" required>
+  <input type="text" id="checkedBy" placeholder="Checked By (Staff Name)" required>
+  <textarea id="remarks" placeholder="Remarks"></textarea>
+
+  <button onclick="saveData()">Submit Verified Loan</button>
+
+  <p id="msg"></p>
+
+  <div class="section-title">Verified Loans List</div>
+
+  <input type="text" id="searchBox" placeholder="Search Loan No / Name / Checked By..." onkeyup="searchTable()">
+
+  <table id="loanTable">
+    <thead>
+      <tr>
+        <th>Loan No</th>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Checked By</th>
+        <th>Remarks</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <div class="footer">
+    Prepared by:<br>
+    <strong>Varma & Varma Chartered Accountants</strong>
+  </div>
+
+</div>
+
+<!-- Firebase Realtime Database -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // 🔥 Your Firebase Config (Already Updated)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqllYMUQJwaAYC9otK_W9oahC4JyK7Izk",
+    authDomain: "loan-1f357.firebaseapp.com",
+    databaseURL: "https://loan-1f357-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "loan-1f357",
+    storageBucket: "loan-1f357.firebasestorage.app",
+    messagingSenderId: "639833730667",
+    appId: "1:639833730667:web:b3a728b3d2e0e2e34d4b2e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Load verified loans live
+  function loadLoans() {
+    const loansRef = ref(db, "loans");
+
+    onValue(loansRef, (snapshot) => {
+      const data = snapshot.val();
+      let tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "";
+
+      if (data) {
+        Object.keys(data).forEach((key) => {
+          let loan = data[key];
+
+          let row = `
+            <tr>
+              <td>${loan.loanNo || ""}</td>
+              <td>${loan.name || ""}</td>
+              <td>${loan.amount || ""}</td>
+              <td>${loan.checkedBy || ""}</td>
+              <td>${loan.remarks || ""}</td>
+              <td>${loan.date || ""}</td>
+            </tr>
+          `;
+
+          tableBody.innerHTML += row;
+        });
+      }
+    });
+  }
+
+  loadLoans();
+
+  // Save loan with duplicate check
+  window.saveData = async function () {
+
+    let name = document.getElementById("name").value.trim();
+    let loanNo = document.getElementById("loanNo").value.trim();
+    let amount = document.getElementById("amount").value.trim();
+    let checkedBy = document.getElementById("checkedBy").value.trim();
+    let remarks = document.getElementById("remarks").value.trim();
+
+    if (name === "" || loanNo === "" || amount === "" || checkedBy === "") {
+      document.getElementById("msg").innerHTML = "❌ Please fill all required fields!";
+      document.getElementById("msg").style.color = "red";
+      return;
+    }
+
+    try {
+      // Duplicate check
+      const dbRef = ref(db);
+      const snapshot = await get(child(dbRef, "loans/" + loanNo));
+
+      if (snapshot.exists()) {
+        document.getElementById("msg").innerHTML = "❌ Loan Number already verified!";
+        document.getElementById("msg").style.color = "red";
+        return;
+      }
+
+      // Save to realtime DB
+      await set(ref(db, "loans/" + loanNo), {
+        loanNo: loanNo,
+        name: name,
+        amount: amount,
+        checkedBy: checkedBy,
+        remarks: remarks,
+        date: new Date().toLocaleString()
+      });
+
+      document.getElementById("msg").innerHTML = "✅ Loan Verified & Saved Successfully!";
+      document.getElementById("msg").style.color = "green";
+
+      document.getElementById("name").value = "";
+      document.getElementById("loanNo").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("checkedBy").value = "";
+      document.getElementById("remarks").value = "";
+
+    } catch (e) {
+      document.getElementById("msg").innerHTML = "❌ Error: " + e;
+      document.getElementById("msg").style.color = "red";
+    }
+  };
+
+  // Search function
+  window.searchTable = function () {
+    let input = document.getElementById("searchBox").value.toLowerCase();
+    let table = document.getElementById("loanTable");
+    let rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+      let rowText = rows[i].innerText.toLowerCase();
+      rows[i].style.display = rowText.includes(input) ? "" : "none";
+    }
+  };
+</script>
+
+</body>
+</html>
