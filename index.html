@@ -91,7 +91,7 @@
     #searchBox {
       width: 400px;
       padding: 10px;
-      margin: 15px auto;
+      margin:  15px auto;
       display: block;
       border-radius: 5px;
       border: 1px solid #aaa;
@@ -103,6 +103,17 @@
       font-size: 18px;
       font-weight: bold;
       color: #222;
+    }
+
+    .stats-box {
+      background: #f8f8f8;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -128,6 +139,11 @@
   <button onclick="saveData()">Submit Verified Loan</button>
 
   <p id="msg"></p>
+
+  <!-- TOTAL LOAN COUNT -->
+  <div class="stats-box">
+    Total Loans Verified: <span id="totalLoans">0</span>
+  </div>
 
   <div class="section-title">Verified Loans List</div>
 
@@ -159,7 +175,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // 🔥 Your Firebase Config (Already Updated)
   const firebaseConfig = {
     apiKey: "AIzaSyCqllYMUQJwaAYC9otK_W9oahC4JyK7Izk",
     authDomain: "loan-1f357.firebaseapp.com",
@@ -173,7 +188,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Load verified loans live
+  // Load verified loans list live
   function loadLoans() {
     const loansRef = ref(db, "loans");
 
@@ -182,9 +197,12 @@
       let tableBody = document.getElementById("tableBody");
       tableBody.innerHTML = "";
 
+      let totalCount = 0;
+
       if (data) {
         Object.keys(data).forEach((key) => {
           let loan = data[key];
+          totalCount++;
 
           let row = `
             <tr>
@@ -200,6 +218,9 @@
           tableBody.innerHTML += row;
         });
       }
+
+      // Update total loans verified
+      document.getElementById("totalLoans").innerText = totalCount;
     });
   }
 
