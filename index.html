@@ -1,249 +1,494 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>KSBCDC Internal Audit - Document Verification</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KSBCDC Internal Audit — Document Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(to right, #eef2f3, #dfe9f3);
-      padding: 20px;
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface2: #f8fafc;
+      --border: #e2e8f0;
+      --primary: #0f4c81;
+      --primary-light: #1e6bb0;
+      --primary-glow: rgba(15,76,129,0.12);
+      --accent: #00a878;
+      --accent-light: #e6f7f3;
+      --danger: #e53e3e;
+      --warn: #d97706;
+      --warn-light: #fffbeb;
+      --warn-border: #fcd34d;
+      --text: #1a202c;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.14);
+      --radius: 12px;
+      --radius-sm: 8px;
     }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    .box {
-      background: white;
-      padding: 30px;
-      max-width: 1000px;
-      margin: auto;
-      border-radius: 12px;
-      box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+    /* NAV */
+    .topnav {
+      background: var(--primary); padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+      box-shadow: 0 2px 12px rgba(15,76,129,0.25);
     }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-logo { width: 34px; height: 34px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .nav-title { font-size: 14px; font-weight: 600; color: white; letter-spacing: 0.5px; }
+    .nav-sub { font-size: 11px; color: rgba(255,255,255,0.65); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-time { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.7); }
+    .nav-badge { background: var(--accent); color: white; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 100px; }
 
-    .header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+    /* MAIN */
+    .main-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
 
-    .header h2 {
-      margin: 0;
-      color: #1a1a1a;
-    }
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; animation: fadeUp 0.5s ease both; }
+    .stat-card { background: var(--surface); border-radius: var(--radius); padding: 16px 18px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 12px; transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .stat-icon.green { background: var(--accent-light); }
+    .stat-icon.blue  { background: #e8f0fe; }
+    .stat-icon.amber { background: #fef3c7; }
+    .stat-icon.rose  { background: #fee2e2; }
+    .stat-icon.orange{ background: #ffedd5; }
+    .stat-val { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--text); line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
-    .header h3 {
-      margin-top: 8px;
-      color: #555;
-      font-weight: normal;
-    }
+    /* LAYOUT */
+    .two-col { display: grid; grid-template-columns: 440px 1fr; gap: 20px; align-items: start; }
 
+    /* FORM */
+    .form-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; animation: fadeUp 0.5s 0.1s ease both; position: sticky; top: 80px; }
+    .card-header { padding: 16px 22px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; gap: 10px; }
+    .card-header-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 2s infinite; }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .card-body { padding: 20px 22px; }
+    .field-group { margin-bottom: 13px; }
+    label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 5px; }
+    label .required { color: var(--danger); margin-left: 2px; }
     input, textarea, select {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: 0.2s;
+      width: 100%; padding: 10px 13px; font-family: 'Sora', sans-serif; font-size: 13.5px;
+      background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s, background 0.18s; -webkit-appearance: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px var(--primary-glow); background: #fff; }
+    input::placeholder, textarea::placeholder { color: var(--text-light); font-size: 13px; }
+    textarea { resize: vertical; min-height: 72px; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+    input:disabled, textarea:disabled, select:disabled { opacity: 0.45; cursor: not-allowed; background: #f1f5f9; }
+
+    /* SCHEME SELECT HIGHLIGHT */
+    select#scheme, select#m_scheme {
+      border-color: #c7d8ed;
+      background-color: #f0f6ff;
+    }
+    select#scheme:focus, select#m_scheme:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: #fff;
     }
 
-    input:focus, textarea:focus, select:focus {
-      border-color: #4CAF50;
-      outline: none;
-      box-shadow: 0 0 5px rgba(76,175,80,0.3);
-    }
+    /* STATUS BANNER */
+    #loanStatusBanner { display: none; border-radius: var(--radius-sm); padding: 13px 15px; margin-bottom: 13px; font-size: 13px; font-weight: 500; border: 1.5px solid; animation: popIn 0.3s ease; }
+    #loanStatusBanner.ongoing { background: var(--warn-light); border-color: var(--warn-border); color: #92400e; }
+    #loanStatusBanner.completed { background: var(--accent-light); border-color: #6ee7b7; color: #065f46; }
+    .banner-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .banner-info { display: flex; align-items: center; gap: 9px; }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(217,119,6,0.3); border-top-color: var(--warn); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    .btn-complete { padding: 7px 15px; background: var(--warn); color: white; border: none; border-radius: 6px; font-family: 'Sora',sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .btn-complete:hover { background: #b45309; }
 
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: 0.2s;
-    }
+    /* BUTTONS */
+    .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+    .btn-submit { flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sora',sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.18s, transform 0.12s, box-shadow 0.18s; }
+    .btn-submit:hover { background: var(--primary-light); box-shadow: 0 4px 14px rgba(15,76,129,0.3); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.42; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ongoing { padding: 12px 14px; background: #fff7ed; color: var(--warn); border: 1.5px solid var(--warn-border); border-radius: var(--radius-sm); font-family: 'Sora',sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .btn-ongoing:hover { background: var(--warn); color: white; }
+    .btn-ongoing:disabled { opacity: 0.4; cursor: not-allowed; }
+    #msg { font-size: 12px; font-weight: 500; text-align: center; margin-top: 10px; min-height: 18px; color: var(--danger); }
+    #msg.success { color: var(--accent); }
 
-    button:hover {
-      background: #388E3C;
-    }
+    /* TABLE CARD */
+    .table-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; animation: fadeUp 0.5s 0.2s ease both; }
+    .table-toolbar { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .table-title { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+    .search-wrap { position: relative; flex: 1; min-width: 160px; }
+    .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; pointer-events: none; }
+    #searchBox { padding: 8px 12px 8px 30px; font-size: 13px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: white; width: 100%; margin: 0; }
+    .filter-wrap { display: flex; gap: 5px; flex-wrap: wrap; }
+    .filter-pill { padding: 5px 11px; border-radius: 100px; font-size: 11px; font-weight: 600; border: 1.5px solid var(--border); background: white; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+    .filter-pill.active, .filter-pill:hover { border-color: var(--primary); background: var(--primary); color: white; }
+    .filter-pill.ongoing-pill.active, .filter-pill.ongoing-pill:hover { border-color: var(--warn); background: var(--warn); color: white; }
+    .btn-export { padding: 7px 13px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; border: 1.5px solid var(--border); background: white; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; font-family: 'Sora',sans-serif; }
+    .btn-export:hover { border-color: var(--accent); color: var(--accent); }
 
-    #msg {
-      font-weight: bold;
-      text-align: center;
-      margin-top: 12px;
-      color: red;
-    }
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--primary); }
+    th { padding: 10px 13px; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.85); white-space: nowrap; text-align: left; cursor: pointer; user-select: none; }
+    th:hover { color: white; }
+    td { padding: 10px 13px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fbff; }
+    .loan-no { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: var(--primary); }
+    .amount-cell { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
+    .date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+    .badge-verified { background: var(--accent-light); color: var(--accent); }
+    .badge-ongoing { background: var(--warn-light); color: var(--warn); border: 1px solid var(--warn-border); }
+    .badge-ongoing .dot-spin { width: 7px; height: 7px; border: 1.5px solid rgba(217,119,6,0.3); border-top-color: var(--warn); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .btn-complete-inline { padding: 4px 11px; background: var(--warn); color: white; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Sora',sans-serif; transition: background 0.15s; }
+    .btn-complete-inline:hover { background: #b45309; }
+    .no-data { text-align: center; padding: 48px 20px; color: var(--text-light); font-size: 13px; }
+    .no-data .icon { font-size: 32px; margin-bottom: 10px; }
 
-    .stats-box {
-      background: #f4f6f9;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 20px;
-      border-left: 5px solid #4CAF50;
-      font-size: 16px;
-      font-weight: bold;
+    /* SCHEME PILL IN TABLE */
+    .scheme-pill {
+      display: inline-block; padding: 3px 9px; border-radius: 5px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
     }
+    .sp-micro   { background: #dbeafe; color: #1d4ed8; }
+    .sp-veedu   { background: #fce7f3; color: #9d174d; }
+    .sp-edu     { background: #d1fae5; color: #065f46; }
+    .sp-return  { background: #ffedd5; color: #9a3412; }
+    .sp-self    { background: #ede9fe; color: #5b21b6; }
+    .sp-none    { background: #f1f5f9; color: #94a3b8; font-style: italic; }
 
-    .section-title {
-      margin-top: 35px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
+    /* REMARKS CELL */
+    .remarks-cell { max-width: 160px; }
+    .remarks-preview {
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; font-size: 12.5px; line-height: 1.5; color: var(--text);
+      word-break: break-word;
     }
-
-    #searchBox {
-      width: 50%;
-      padding: 10px;
-      margin: 15px auto;
-      display: block;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    .remarks-readmore {
+      display: inline-block; margin-top: 3px; font-size: 11px; font-weight: 600;
+      color: var(--primary); cursor: pointer; border: none; background: none;
+      font-family: 'Sora', sans-serif; padding: 0; text-decoration: none;
     }
+    .remarks-readmore:hover { text-decoration: underline; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      border-radius: 10px;
+    /* REMARKS MODAL */
+    #remarksModal {
+      position: fixed; inset: 0; background: rgba(15,20,40,0.5); display: none;
+      justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(4px);
+    }
+    .remarks-modal-box {
+      background: white; border-radius: 16px; width: 90%; max-width: 520px;
+      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
       overflow: hidden;
     }
-
-    th {
-      background: #2c3e50;
-      color: white;
-      padding: 12px;
-      font-size: 14px;
+    .remarks-modal-head {
+      padding: 16px 20px; background: var(--surface2); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .remarks-modal-head-left { display: flex; align-items: center; gap: 10px; }
+    .remarks-modal-icon { font-size: 18px; }
+    .remarks-modal-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .remarks-modal-loan {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600;
+      background: var(--primary-glow); color: var(--primary); padding: 3px 10px;
+      border-radius: 100px; border: 1px solid #c7d8ed;
+    }
+    .remarks-modal-close {
+      width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
+      background: white; font-size: 14px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; color: var(--text-muted);
+      transition: all 0.15s; flex-shrink: 0; font-family: 'Sora',sans-serif;
+    }
+    .remarks-modal-close:hover { background: var(--danger); color: white; border-color: var(--danger); }
+    .remarks-modal-body {
+      padding: 20px 22px; font-size: 14px; line-height: 1.8; color: var(--text);
+      white-space: pre-wrap; word-break: break-word; max-height: 340px; overflow-y: auto;
+    }
+    .remarks-modal-footer {
+      padding: 12px 22px; border-top: 1px solid var(--border); background: var(--surface2);
+      font-size: 11.5px; color: var(--text-muted);
     }
 
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
+    /* PAGINATION */
+    .pagination { padding: 13px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface2); }
+    .page-info { font-size: 12px; color: var(--text-muted); }
+    .page-btns { display: flex; gap: 5px; }
+    .page-btn { width: 29px; height: 29px; border-radius: 6px; border: 1.5px solid var(--border); background: white; color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'Sora',sans-serif; }
+    .page-btn:hover, .page-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+    .page-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
-    tr:hover {
-      background: #f1f7ff;
-    }
+    .footer { text-align: center; font-size: 11.5px; color: var(--text-muted); margin-top: 30px; }
+    .footer strong { color: var(--primary); }
 
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      margin-top: 30px;
-      color: #555;
-    }
+    /* POPUPS */
+    .popup { position: fixed; inset: 0; background: rgba(15,20,40,0.52); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+    .popup-content { background: white; padding: 36px 46px; border-radius: 20px; text-align: center; box-shadow: var(--shadow-lg); animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1); border: 1px solid var(--border); max-width: 340px; width: 90%; }
+    .popup-icon { font-size: 44px; margin-bottom: 10px; }
+    .popup-content h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
+    .popup-content p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .popup-loanno { margin-top: 12px; font-family: 'IBM Plex Mono',monospace; font-size: 13px; background: var(--accent-light); color: var(--accent); padding: 6px 16px; border-radius: 100px; display: inline-block; font-weight: 600; }
+    .popup-loanno.warn-tag { background: var(--warn-light); color: var(--warn); }
 
-    /* Popup Style */
-    .popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.45);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
+    /* COMPLETE MODAL */
+    #completeModal .popup-content {
+      padding: 28px 32px; max-width: 440px; text-align: left;
+      max-height: 90vh; overflow-y: auto;
     }
+    #completeModal h2 { font-size: 17px; margin-bottom: 4px; }
+    #completeModal .modal-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 14px; }
+    .btn-modal-cancel { flex: 1; padding: 11px; background: white; color: var(--text-muted); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sora',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-modal-cancel:hover { background: var(--bg); }
+    .btn-modal-confirm { flex: 1; padding: 11px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sora',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-modal-confirm:hover { background: #008f67; }
+    #m_msg { font-size: 12px; color: var(--danger); min-height: 16px; margin-top: 6px; }
 
-    .popup-content {
-      background: #ffffff;
-      padding: 35px 50px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0px 15px 40px rgba(0,0,0,0.25);
-      animation: popupAnimation 0.3s ease;
-    }
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes popIn { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes rowIn { from { background:#d1fae5; } to { background:transparent; } }
+    .row-new td { animation: rowIn 2s ease; }
 
-    .popup-content h2 {
-      margin: 0;
-      color: #2e7d32;
-    }
-
-    .popup-content p {
-      margin-top: 10px;
-      font-size: 16px;
-      color: #444;
-    }
-
-    @keyframes popupAnimation {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+    @media (max-width: 900px) { .two-col { grid-template-columns:1fr; } .stats-row { grid-template-columns:1fr 1fr; } .form-card { position:static; } }
+    @media (max-width: 500px) { .stats-row { grid-template-columns:1fr; } .topnav { padding:0 14px; } }
   </style>
 </head>
-
 <body>
 
-<div class="box">
+<nav class="topnav">
+  <div class="nav-brand">
+    <div class="nav-logo">🏦</div>
+    <div>
+      <div class="nav-title">KSBCDC Internal Audit</div>
+      <div class="nav-sub">Loan Document Verification System</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-time" id="liveClock"></div>
+    <div class="nav-badge">LIVE</div>
+  </div>
+</nav>
 
-  <div class="header">
-    <h2>KSBCDC INTERNAL AUDIT</h2>
-    <h3>Loan Document Verification</h3>
+<div class="main-wrap">
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total Verified</div></div></div>
+    <div class="stat-card"><div class="stat-icon orange">⏳</div><div><div class="stat-val" id="statOngoing">0</div><div class="stat-label">Ongoing</div></div></div>
+    <div class="stat-card"><div class="stat-icon blue">📋</div><div><div class="stat-val" id="statToday">0</div><div class="stat-label">Today's Count</div></div></div>
+    <div class="stat-card"><div class="stat-icon rose">💰</div><div><div class="stat-val" id="statWithAmount">0</div><div class="stat-label">With Amount</div></div></div>
   </div>
 
-  <input type="text" id="name" placeholder="Customer Name (Optional)">
-  <input type="text" id="loanNo" placeholder="Loan Number (Required)">
-  <input type="number" id="amount" placeholder="Loan Amount (Optional)">
+  <div class="two-col">
 
-  <select id="checkedBy">
-    <option value="">-- Select Name (Required) --</option>
-    <option value="Muhammed Nihal">Muhammed Nihal</option>
-    <option value="Ameena Nasser">Ameena Nasser</option>
-    <option value="CA Hiba Resmin">CA Hiba Resmin</option>
-    <option value="Muhammed Shahid N">Muhammed Shahid N</option>
-    <option value="Yaseen irfan">Yaseen irfan</option>
-  </select>
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <div class="card-header">
+        <div class="card-header-dot"></div>
+        <div class="card-title">Submit Verified Loan</div>
+      </div>
+      <div class="card-body">
 
-  <textarea id="remarks" placeholder="Remarks (Optional)"></textarea>
+        <div class="field-group">
+          <label>Loan Number <span class="required">*</span></label>
+          <input type="text" id="loanNo" placeholder="Enter loan number…" oninput="checkLoanStatus()">
+        </div>
 
-  <button onclick="saveData()">Submit Verified Loan</button>
+        <!-- Live status banner -->
+        <div id="loanStatusBanner"></div>
 
-  <p id="msg"></p>
+        <!-- SCHEME — mandatory -->
+        <div class="field-group">
+          <label>Loan Scheme <span class="required">*</span></label>
+          <select id="scheme">
+            <option value="">— Select scheme —</option>
+            <option value="Micro Credit Loan">Micro Credit Loan</option>
+            <option value="Ente Veedu Loan Scheme">Ente Veedu Loan Scheme</option>
+            <option value="Education Loan">Education Loan</option>
+            <option value="Self Employment Return Scheme">Self Employment Return Scheme</option>
+            <option value="Self Employment Scheme">Self Employment Scheme</option>
+          </select>
+        </div>
 
-  <div class="stats-box">
-    Total Loans Verified: <span id="totalLoans">0</span>
+        <div class="field-group">
+          <label>Customer Name</label>
+          <input type="text" id="name" placeholder="Enter customer name…">
+        </div>
+        <div class="field-group">
+          <label>Loan Amount</label>
+          <input type="number" id="amount" placeholder="Enter loan amount…">
+        </div>
+        <div class="field-group">
+          <label>Checked By <span class="required">*</span></label>
+          <select id="checkedBy">
+            <option value="">— Select auditor —</option>
+            <option value="Muhammed Nihal">Muhammed Nihal</option>
+            <option value="Ameena Nasser">Ameena Nasser</option>
+            <option value="CA Hiba Resmin">CA Hiba Resmin</option>
+            <option value="Muhammed Shahid N">Muhammed Shahid N</option>
+            <option value="Yaseen irfan">Yaseen irfan</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Remarks</label>
+          <textarea id="remarks" placeholder="Add any remarks or observations…"></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-ongoing" id="btnOngoing" onclick="markOngoing()" title="Mark loan as in-progress">⏳ Mark Ongoing</button>
+          <button class="btn-submit" id="btnSubmit" onclick="saveData()">⬆ Submit Verified</button>
+        </div>
+        <p id="msg"></p>
+      </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="table-title">📂 Loan Records</div>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchBox" placeholder="Search loans, scheme, remarks…" oninput="applyFilters()">
+        </div>
+        <div class="filter-wrap">
+          <div class="filter-pill active" data-filter="all" onclick="setFilter(this)">All</div>
+          <div class="filter-pill ongoing-pill" data-filter="__ongoing__" onclick="setFilter(this)">⏳ Ongoing</div>
+          <div class="filter-pill" data-filter="__verified__" onclick="setFilter(this)">✅ Verified</div>
+          <div class="filter-pill" data-filter="Muhammed Nihal" onclick="setFilter(this)">Nihal</div>
+          <div class="filter-pill" data-filter="Ameena Nasser" onclick="setFilter(this)">Ameena</div>
+          <div class="filter-pill" data-filter="CA Hiba Resmin" onclick="setFilter(this)">Hiba</div>
+          <div class="filter-pill" data-filter="Muhammed Shahid N" onclick="setFilter(this)">Shahid</div>
+          <div class="filter-pill" data-filter="Yaseen irfan" onclick="setFilter(this)">Yaseen</div>
+        </div>
+        <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTable('loanNo')">Loan No ↕</th>
+              <th onclick="sortTable('name')">Name ↕</th>
+              <th onclick="sortTable('scheme')">Scheme ↕</th>
+              <th onclick="sortTable('amount')">Amount ↕</th>
+              <th onclick="sortTable('checkedBy')">Checked By ↕</th>
+              <th>Remarks</th>
+              <th onclick="sortTable('timestamp')">Time ↕</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="9" class="no-data"><div class="icon">⏳</div>Loading records…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <div class="page-info" id="pageInfo">Showing 0 of 0</div>
+        <div class="page-btns">
+          <button class="page-btn" id="prevBtn" onclick="changePage(-1)" disabled>‹</button>
+          <button class="page-btn" id="nextBtn" onclick="changePage(1)" disabled>›</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="section-title">Verified Loans List</div>
-
-  <input type="text" id="searchBox" placeholder="Search Loan No / Name / Checked By..." onkeyup="searchTable()">
-
-  <table id="loanTable">
-    <thead>
-      <tr>
-        <th>Loan No</th>
-        <th>Name</th>
-        <th>Amount</th>
-        <th>Checked By</th>
-        <th>Remarks</th>
-        <th>Verified On</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
-  <div class="footer">
-    Prepared by:<br>
-    <strong>Nihal Shalu</strong>
-  </div>
-
+  <div class="footer">Prepared by: <strong>Nihal Shalu</strong> &nbsp;·&nbsp; KSBCDC Internal Audit System  &nbsp;·&nbsp; <strong>Version 2.0</strong></div>
 </div>
-
-<!-- Success Popup -->
+  
+<!-- SUCCESS POPUP -->
 <div id="successPopup" class="popup">
   <div class="popup-content">
-    <h2>🌟 Excellent Work!</h2>
-    <p>Loan Verified Successfully.<br>Keep Going — You're Doing Great 🚀</p>
+    <div class="popup-icon">🎉</div>
+    <h2>Verified Successfully!</h2>
+    <p>Loan recorded in the audit system.<br>Keep up the great work!</p>
+    <div class="popup-loanno" id="popupLoanNo"></div>
+  </div>
+</div>
+
+<!-- ONGOING POPUP -->
+<div id="ongoingPopup" class="popup">
+  <div class="popup-content">
+    <div class="popup-icon">⏳</div>
+    <h2>Marked as Ongoing</h2>
+    <p>This loan is now in-progress.<br>Submission is locked until completed.</p>
+    <div class="popup-loanno warn-tag" id="popupOngoingNo"></div>
+  </div>
+</div>
+
+<!-- COMPLETE MODAL -->
+<div id="completeModal" class="popup">
+  <div class="popup-content">
+    <div style="font-size:28px;margin-bottom:8px;">✅</div>
+    <h2>Complete Verification</h2>
+    <p class="modal-sub">Fill in the remaining details to mark this loan as fully verified.</p>
+
+    <!-- SCHEME in complete modal — mandatory -->
+    <div class="field-group">
+      <label>Loan Scheme <span class="required">*</span></label>
+      <select id="m_scheme">
+        <option value="">— Select scheme —</option>
+        <option value="Micro Credit Loan">Micro Credit Loan</option>
+        <option value="Ente Veedu Loan Scheme">Ente Veedu Loan Scheme</option>
+        <option value="Education Loan">Education Loan</option>
+        <option value="Self Employment Return Scheme">Self Employment Return Scheme</option>
+        <option value="Self Employment Scheme">Self Employment Scheme</option>
+      </select>
+    </div>
+
+    <div class="field-group"><label>Customer Name</label><input type="text" id="m_name" placeholder="Customer name…"></div>
+    <div class="field-group"><label>Loan Amount</label><input type="number" id="m_amount" placeholder="Loan amount…"></div>
+    <div class="field-group">
+      <label>Checked By <span class="required">*</span></label>
+      <select id="m_checkedBy">
+        <option value="">— Select auditor —</option>
+        <option value="Muhammed Nihal">Muhammed Nihal</option>
+        <option value="Ameena Nasser">Ameena Nasser</option>
+        <option value="CA Hiba Resmin">CA Hiba Resmin</option>
+        <option value="Muhammed Shahid N">Muhammed Shahid N</option>
+        <option value="Yaseen irfan">Yaseen irfan</option>
+      </select>
+    </div>
+    <div class="field-group"><label>Remarks</label><textarea id="m_remarks" placeholder="Remarks…" style="min-height:60px;"></textarea></div>
+    <p id="m_msg"></p>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeCompleteModal()">Cancel</button>
+      <button class="btn-modal-confirm" onclick="confirmComplete()">✅ Mark Verified</button>
+    </div>
+  </div>
+</div>
+
+<!-- REMARKS FULL-TEXT MODAL -->
+<div id="remarksModal">
+  <div class="remarks-modal-box">
+    <div class="remarks-modal-head">
+      <div class="remarks-modal-head-left">
+        <span class="remarks-modal-icon">📝</span>
+        <span class="remarks-modal-title">Full Remarks</span>
+        <span class="remarks-modal-loan" id="rmLoanNo"></span>
+      </div>
+      <button class="remarks-modal-close" onclick="closeRemarksModal()">✕</button>
+    </div>
+    <div class="remarks-modal-body" id="rmBody"></div>
+    <div class="remarks-modal-footer" id="rmFooter"></div>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set, get, child, onValue } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, set, get, child, onValue }
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCqllYMUQJwaAYC9otK_W9oahC4JyK7Izk",
@@ -258,119 +503,369 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  function formatNewDate(timestamp) {
-    return new Date(timestamp).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
+  let allLoans = [], filteredLoans = [];
+  let currentPage = 1;
+  const PAGE_SIZE = 15;
+  let sortKey = 'timestamp', sortAsc = false;
+  let activeFilter = 'all';
+  let justAddedLoanNo = null;
+  let completeTargetLoanNo = null;
+  let statusCheckTimer = null;
+
+  // Clock
+  function updateClock() {
+    document.getElementById('liveClock').textContent =
+      new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  function formatDate(ts) {
+    return new Date(ts).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+  function isToday(ts) {
+    const d = new Date(ts), t = new Date();
+    return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
   }
 
-  function loadLoans() {
-    const loansRef = ref(db, "loans");
-
-    onValue(loansRef, (snapshot) => {
-      const data = snapshot.val();
-      let tableBody = document.getElementById("tableBody");
-      tableBody.innerHTML = "";
-      let totalCount = 0;
-
-      if (data) {
-        let loansArray = Object.values(data);
-
-        loansArray.sort((a, b) => {
-          let timeA = a.timestamp ? a.timestamp : (a.date ? new Date(a.date).getTime() : 0);
-          let timeB = b.timestamp ? b.timestamp : (b.date ? new Date(b.date).getTime() : 0);
-          return timeB - timeA;
-        });
-
-        loansArray.forEach((loan) => {
-          totalCount++;
-
-          let displayDate = loan.timestamp
-            ? formatNewDate(loan.timestamp)
-            : (loan.date || "");
-
-          let row = `
-            <tr>
-              <td>${loan.loanNo || ""}</td>
-              <td>${loan.name || ""}</td>
-              <td>${loan.amount || ""}</td>
-              <td>${loan.checkedBy || ""}</td>
-              <td>${loan.remarks || ""}</td>
-              <td>${displayDate}</td>
-            </tr>
-          `;
-
-          tableBody.innerHTML += row;
-        });
-      }
-
-      document.getElementById("totalLoans").innerText = totalCount;
-    });
+  // Scheme colour class
+  function schemePillClass(scheme) {
+    if (!scheme) return 'sp-none';
+    const s = scheme.toLowerCase();
+    if (s.includes('micro'))  return 'sp-micro';
+    if (s.includes('veedu')) return 'sp-veedu';
+    if (s.includes('edu'))   return 'sp-edu';
+    if (s.includes('return'))return 'sp-return';
+    if (s.includes('self'))  return 'sp-self';
+    return 'sp-none';
   }
 
-  loadLoans();
+  // ── REMARKS MODAL ────────────────────────────
+  window.openRemarksModal = function(loanNo, remarks, checkedBy, ts) {
+    document.getElementById('rmLoanNo').textContent = 'Loan # ' + loanNo;
+    document.getElementById('rmBody').textContent = remarks || '(No remarks added)';
+    const footer = checkedBy
+      ? `Checked by ${checkedBy}${ts ? '  ·  ' + formatDate(ts) : ''}`
+      : (ts ? formatDate(ts) : '');
+    document.getElementById('rmFooter').textContent = footer;
+    document.getElementById('remarksModal').style.display = 'flex';
+  };
+  window.closeRemarksModal = function() {
+    document.getElementById('remarksModal').style.display = 'none';
+  };
+  document.getElementById('remarksModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRemarksModal();
+  });
 
-  window.saveData = async function () {
+  // ── LOAD ─────────────────────────────────────
+  function mergeAndRefresh(verifiedData, ongoingData) {
+    const verified = Object.values(verifiedData || {}).map(l => {
+      if (!l.timestamp && l.date) l.timestamp = new Date(l.date).getTime();
+      if (!l.timestamp) l.timestamp = 0;
+      return { ...l, _status: 'verified' };
+    });
+    const verifiedNos = new Set(verified.map(l => l.loanNo));
+    const ongoing = Object.values(ongoingData || {})
+      .filter(l => !verifiedNos.has(l.loanNo))
+      .map(l => ({ ...l, _status: 'ongoing', timestamp: l.startedAt || 0 }));
 
-    let name = document.getElementById("name").value.trim();
-    let loanNo = document.getElementById("loanNo").value.trim();
-    let amount = document.getElementById("amount").value.trim();
-    let checkedBy = document.getElementById("checkedBy").value.trim();
-    let remarks = document.getElementById("remarks").value.trim();
+    allLoans = [...ongoing, ...verified];
+    allLoans.sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
+    updateStats(); applyFilters();
+    const loanNo = document.getElementById('loanNo').value.trim();
+    if (loanNo) checkLoanStatus();
+  }
 
-    if (!loanNo || !checkedBy) {
-      document.getElementById("msg").innerHTML = "Loan Number and Checked By are mandatory!";
-      return;
+  let latestVerified = {}, latestOngoing = {};
+
+  onValue(ref(db, "loans"), snap => {
+    latestVerified = snap.val() || {};
+    mergeAndRefresh(latestVerified, latestOngoing);
+  });
+
+  onValue(ref(db, "ongoing"), snap => {
+    latestOngoing = snap.val() || {};
+    mergeAndRefresh(latestVerified, latestOngoing);
+  });
+
+  // ── STATS ─────────────────────────────────────
+  function updateStats() {
+    const verified = allLoans.filter(l => l._status==='verified');
+    const ongoing  = allLoans.filter(l => l._status==='ongoing');
+    document.getElementById('statTotal').textContent   = verified.length;
+    document.getElementById('statOngoing').textContent = ongoing.length;
+    document.getElementById('statToday').textContent   = verified.filter(l=>isToday(l.timestamp)).length;
+    document.getElementById('statWithAmount').textContent = verified.filter(l=>l.amount&&String(l.amount).trim()).length;
+  }
+
+  // ── STATUS CHECK (live) ───────────────────────
+  window.checkLoanStatus = function() {
+    clearTimeout(statusCheckTimer);
+    const loanNo = document.getElementById('loanNo').value.trim();
+    const banner = document.getElementById('loanStatusBanner');
+    if (!loanNo) {
+      banner.style.display='none'; banner.className=''; banner.innerHTML='';
+      setFormDisabled(false); setButtons(false); clearMsg(); return;
     }
-
-    try {
-      const dbRef = ref(db);
-      const snapshot = await get(child(dbRef, "loans/" + loanNo));
-
-      if (snapshot.exists()) {
-        document.getElementById("msg").innerHTML = "Loan Number already verified!";
-        return;
+    statusCheckTimer = setTimeout(async () => {
+      if (latestVerified[loanNo]) {
+        banner.style.display='block'; banner.className='completed';
+        banner.innerHTML=`<div class="banner-row"><div class="banner-info">✅ <strong>Loan #${loanNo}</strong> is already <strong>Verified</strong>. No further action needed.</div></div>`;
+        setFormDisabled(true); setButtons(true); clearMsg(); return;
       }
-
-      await set(ref(db, "loans/" + loanNo), {
-        loanNo,
-        name,
-        amount,
-        checkedBy,
-        remarks,
-        timestamp: Date.now()
-      });
-
-      document.getElementById("msg").innerHTML = "";
-
-      let popup = document.getElementById("successPopup");
-      popup.style.display = "flex";
-
-      setTimeout(() => {
-        popup.style.display = "none";
-      }, 2500);
-
-      document.querySelectorAll("input, textarea, select")
-        .forEach(el => el.value = "");
-
-    } catch (e) {
-      document.getElementById("msg").innerHTML = "Error: " + e;
-    }
+      if (latestOngoing[loanNo]) {
+        const od = latestOngoing[loanNo];
+        banner.style.display='block'; banner.className='ongoing';
+        banner.innerHTML=`<div class="banner-row">
+          <div class="banner-info">
+            <div class="spinner"></div>
+            <div><strong>Loan #${loanNo}</strong> is <strong>Ongoing</strong>${od.startedBy?' — started by <em>'+od.startedBy+'</em>':''}
+            <br><span style="font-size:11px;opacity:0.7;">${od.startedAt?formatDate(od.startedAt):''}</span></div>
+          </div>
+          <button class="btn-complete" onclick="openCompleteModal('${loanNo}')">✅ Mark Completed</button>
+        </div>`;
+        setFormDisabled(true); setButtons(true); clearMsg(); return;
+      }
+      banner.style.display='none'; banner.className=''; banner.innerHTML='';
+      setFormDisabled(false); setButtons(false); clearMsg();
+    }, 300);
   };
 
-  window.searchTable = function () {
-    let input = document.getElementById("searchBox").value.toLowerCase();
-    let rows = document.querySelectorAll("#loanTable tbody tr");
+  function setFormDisabled(state) {
+    ['name','amount','checkedBy','remarks','scheme'].forEach(id => document.getElementById(id).disabled = state);
+  }
+  function setButtons(disabled) {
+    document.getElementById('btnSubmit').disabled = disabled;
+    document.getElementById('btnOngoing').disabled = disabled;
+  }
+  function clearMsg() { const m=document.getElementById('msg'); m.textContent=''; m.className=''; }
 
-    rows.forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+  // ── MARK ONGOING ──────────────────────────────
+  window.markOngoing = async function() {
+    const loanNo    = document.getElementById('loanNo').value.trim();
+    const checkedBy = document.getElementById('checkedBy').value.trim();
+    const msgEl     = document.getElementById('msg');
+    msgEl.className=''; msgEl.textContent='';
+    if (!loanNo) { msgEl.textContent='⚠ Please enter a Loan Number first.'; return; }
+    if (latestVerified[loanNo]) { msgEl.textContent='⚠ This loan is already verified!'; return; }
+    if (latestOngoing[loanNo])  { msgEl.textContent='⚠ Already marked as ongoing!'; return; }
+
+    await set(ref(db, "ongoing/"+loanNo), { loanNo, startedBy: checkedBy||'Unknown', startedAt: Date.now() });
+    document.getElementById('popupOngoingNo').textContent = `Loan # ${loanNo}`;
+    showPopup('ongoingPopup', 2600);
+  };
+
+  // ── COMPLETE MODAL ────────────────────────────
+  window.openCompleteModal = function(loanNo) {
+    completeTargetLoanNo = loanNo;
+    ['m_name','m_amount','m_remarks'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('m_checkedBy').value='';
+    document.getElementById('m_scheme').value='';
+    document.getElementById('m_msg').textContent='';
+    // Pre-fill from main form if available
+    const formChecker = document.getElementById('checkedBy').value;
+    if (formChecker) document.getElementById('m_checkedBy').value = formChecker;
+    const formScheme = document.getElementById('scheme').value;
+    if (formScheme) document.getElementById('m_scheme').value = formScheme;
+    document.getElementById('completeModal').style.display='flex';
+  };
+  window.closeCompleteModal = function() {
+    document.getElementById('completeModal').style.display='none';
+    completeTargetLoanNo = null;
+  };
+  window.confirmComplete = async function() {
+    const loanNo    = completeTargetLoanNo;
+    const scheme    = document.getElementById('m_scheme').value.trim();
+    const name      = document.getElementById('m_name').value.trim();
+    const amount    = document.getElementById('m_amount').value.trim();
+    const checkedBy = document.getElementById('m_checkedBy').value.trim();
+    const remarks   = document.getElementById('m_remarks').value.trim();
+    const mMsg      = document.getElementById('m_msg');
+    if (!scheme)    { mMsg.textContent='⚠ Please select a Loan Scheme.'; return; }
+    if (!checkedBy) { mMsg.textContent='⚠ Please select who checked this loan.'; return; }
+    try {
+      await set(ref(db,"loans/"+loanNo), { loanNo, scheme, name, amount, checkedBy, remarks, timestamp: Date.now() });
+      await set(ref(db,"ongoing/"+loanNo), null);
+      justAddedLoanNo = loanNo;
+      closeCompleteModal();
+      document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`;
+      showPopup('successPopup', 2800);
+      if (document.getElementById('loanNo').value.trim()===loanNo) {
+        document.querySelectorAll('.form-card input,.form-card textarea').forEach(el=>el.value='');
+        document.getElementById('checkedBy').value='';
+        document.getElementById('scheme').value='';
+        checkLoanStatus();
+      }
+    } catch(e) { mMsg.textContent='Error: '+e.message; }
+  };
+
+  // ── SAVE DIRECT ───────────────────────────────
+  window.saveData = async function() {
+    const scheme    = document.getElementById('scheme').value.trim();
+    const name      = document.getElementById('name').value.trim();
+    const loanNo    = document.getElementById('loanNo').value.trim();
+    const amount    = document.getElementById('amount').value.trim();
+    const checkedBy = document.getElementById('checkedBy').value.trim();
+    const remarks   = document.getElementById('remarks').value.trim();
+    const msgEl     = document.getElementById('msg');
+    msgEl.className=''; msgEl.textContent='';
+    if (!loanNo)    { msgEl.textContent='⚠ Loan Number is required.'; return; }
+    if (!scheme)    { msgEl.textContent='⚠ Please select a Loan Scheme.'; return; }
+    if (!checkedBy) { msgEl.textContent='⚠ Checked By is required.'; return; }
+    if (latestVerified[loanNo]) { msgEl.textContent='⚠ Already verified!'; return; }
+    if (latestOngoing[loanNo])  { msgEl.textContent='⚠ Loan is Ongoing — click "Mark Completed" in the banner above.'; return; }
+    try {
+      await set(ref(db,"loans/"+loanNo), { loanNo, scheme, name, amount, checkedBy, remarks, timestamp: Date.now() });
+      justAddedLoanNo=loanNo;
+      document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`;
+      showPopup('successPopup', 2800);
+      document.querySelectorAll('.form-card input,.form-card textarea').forEach(el=>el.value='');
+      document.getElementById('checkedBy').value='';
+      document.getElementById('scheme').value='';
+      checkLoanStatus();
+    } catch(e) { msgEl.textContent='Error: '+e.message; }
+  };
+
+  function showPopup(id, dur) {
+    const el=document.getElementById(id); el.style.display='flex';
+    setTimeout(()=>{ el.style.display='none'; }, dur);
+  }
+  document.getElementById('successPopup').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+  document.getElementById('ongoingPopup').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+  document.getElementById('completeModal').addEventListener('click',function(e){if(e.target===this)closeCompleteModal();});
+
+  // ── FILTERS ───────────────────────────────────
+  window.setFilter = function(el) {
+    document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active'); activeFilter=el.dataset.filter; currentPage=1; applyFilters();
+  };
+  window.applyFilters = function() {
+    const q=document.getElementById('searchBox').value.toLowerCase();
+    filteredLoans=allLoans.filter(l=>{
+      let mf=true;
+      if (activeFilter==='__ongoing__') mf=l._status==='ongoing';
+      else if (activeFilter==='__verified__') mf=l._status==='verified';
+      else if (activeFilter!=='all') mf=l.checkedBy===activeFilter;
+      const ms=!q||[l.loanNo,l.name,l.checkedBy,l.remarks,l.amount,l.scheme].some(v=>String(v||'').toLowerCase().includes(q));
+      return mf&&ms;
     });
+    sortLoans(); renderTable();
+  };
+
+  // ── SORT ──────────────────────────────────────
+  window.sortTable = function(key) {
+    if(sortKey===key) sortAsc=!sortAsc; else { sortKey=key; sortAsc=true; }
+    sortLoans(); renderTable();
+  };
+  function sortLoans() {
+    filteredLoans.sort((a,b)=>{
+      let va=a[sortKey]||'', vb=b[sortKey]||'';
+      if(sortKey==='amount'||sortKey==='timestamp'){va=Number(va)||0;vb=Number(vb)||0;}
+      else{va=String(va).toLowerCase();vb=String(vb).toLowerCase();}
+      return va<vb?(sortAsc?-1:1):va>vb?(sortAsc?1:-1):0;
+    });
+  }
+
+  // ── RENDER ────────────────────────────────────
+  function renderTable() {
+    const tbody=document.getElementById('tableBody');
+    const total=filteredLoans.length;
+    const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+    if(currentPage>totalPages) currentPage=totalPages;
+    const start=(currentPage-1)*PAGE_SIZE;
+    const pageData=filteredLoans.slice(start,start+PAGE_SIZE);
+
+    if(!pageData.length){
+      tbody.innerHTML=`<tr><td colspan="9" class="no-data"><div class="icon">🔍</div>No records found.</td></tr>`;
+    } else {
+      tbody.innerHTML=pageData.map(loan=>{
+        const isNew=loan.loanNo===justAddedLoanNo;
+        const isOngoing=loan._status==='ongoing';
+        const amtStr=(!isOngoing&&loan.amount)?`₹${Number(loan.amount).toLocaleString('en-IN')}`:'—';
+        const dateStr=loan.timestamp?formatDate(loan.timestamp):'—';
+        const checkerDisplay=loan.checkedBy||loan.startedBy||'—';
+
+        // Scheme cell
+        const sc = loan.scheme || '';
+        const schemeTd = sc
+          ? `<span class="scheme-pill ${schemePillClass(sc)}">${sc}</span>`
+          : `<span style="color:var(--text-light);font-size:12px;font-style:italic;">—</span>`;
+
+        // Remarks cell — preview + "Read more" button opening modal
+        let remarksTd;
+        const rm = loan.remarks || '';
+        if (!rm) {
+          remarksTd = isOngoing
+            ? `<span style="color:var(--text-light);font-size:12px;font-style:italic;">In progress…</span>`
+            : `<span style="color:var(--text-light);font-size:12px;">—</span>`;
+        } else {
+          // Escape for JS attribute — use data storage approach via index
+          const idx = pageData.indexOf(loan);
+          remarksTd = `<div class="remarks-cell">
+            <div class="remarks-preview">${rm.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <button class="remarks-readmore" onclick="window._openRm(${start + idx})">Read more ↗</button>
+          </div>`;
+        }
+
+        const statusBadge=isOngoing
+          ?`<span class="badge badge-ongoing"><span class="dot-spin"></span>Ongoing</span>`
+          :`<span class="badge badge-verified">✓ Verified</span>`;
+        const actionBtn=isOngoing
+          ?`<button class="btn-complete-inline" onclick="openCompleteModal('${loan.loanNo}')">✅ Complete</button>`
+          :`<span style="color:var(--text-light);font-size:12px;">—</span>`;
+        const nameTd=isOngoing&&!loan.name
+          ?`<span style="color:var(--text-light);font-size:12px;font-style:italic;">Pending…</span>`
+          :(loan.name||'—');
+
+        return `<tr class="${isNew?'row-new':''}">
+          <td><span class="loan-no">${loan.loanNo||'—'}</span></td>
+          <td>${nameTd}</td>
+          <td>${schemeTd}</td>
+          <td><span class="amount-cell">${amtStr}</span></td>
+          <td>${checkerDisplay}</td>
+          <td>${remarksTd}</td>
+          <td><span class="date-cell">${dateStr}</span></td>
+          <td>${statusBadge}</td>
+          <td>${actionBtn}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Expose a clean opener that reads directly from filteredLoans — no string escaping needed
+    window._openRm = function(idx) {
+      const loan = filteredLoans[idx];
+      if (!loan) return;
+      openRemarksModal(loan.loanNo, loan.remarks, loan.checkedBy || loan.startedBy, loan.timestamp);
+    };
+
+    const showing=total===0?0:`${start+1}–${Math.min(start+PAGE_SIZE,total)}`;
+    document.getElementById('pageInfo').textContent=`Showing ${showing} of ${total}`;
+    document.getElementById('prevBtn').disabled=currentPage<=1;
+    document.getElementById('nextBtn').disabled=currentPage>=totalPages;
+    justAddedLoanNo=null;
+  }
+  window.changePage=function(dir){currentPage+=dir;renderTable();};
+
+  // ── EXPORT ────────────────────────────────────
+  window.exportCSV=function(){
+    if(!filteredLoans.length){alert('No data to export.');return;}
+    const h=['Loan No','Scheme','Name','Amount','Checked By','Remarks','Time','Status'];
+    const rows=filteredLoans.map(l=>[
+      l.loanNo||'',
+      l.scheme||'',
+      l.name||'',
+      l.amount||'',
+      l.checkedBy||l.startedBy||'',
+      '"'+(l.remarks||'').replace(/"/g,'""')+'"',
+      l.timestamp?formatDate(l.timestamp):'',
+      l._status||''
+    ]);
+    const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`ksbcdc_audit_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();URL.revokeObjectURL(url);
   };
 </script>
-
 </body>
 </html>
