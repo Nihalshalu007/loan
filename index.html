@@ -335,59 +335,149 @@
     @keyframes rowEdited { from { background: #ede9fe; } to { background: transparent; } }
     .row-edited td { animation: rowEdited 2.5s ease; }
 
+    /* MODAL SUGGESTION AREA (inside welcome modal) */
+    .modal-suggestion-divider { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; margin: 4px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .modal-suggestion-area { display: flex; flex-direction: column; gap: 8px; }
+    .modal-suggestion-area select, .modal-suggestion-area textarea { width: 100%; padding: 9px 13px; font-family: 'Sora', sans-serif; font-size: 13px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s; }
+    .modal-suggestion-area select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; -webkit-appearance: none; }
+    .modal-suggestion-area select:focus, .modal-suggestion-area textarea:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px var(--primary-glow); background: #fff; }
+    .modal-suggestion-area textarea { resize: vertical; min-height: 72px; }
+    .modal-suggestion-area textarea::placeholder { color: var(--text-light); }
+    #wSuggestionMsg { font-size: 12px; font-weight: 500; min-height: 14px; color: var(--danger); }
+    #wSuggestionMsg.ok { color: var(--accent); }
+    .btn-w-suggest { padding: 10px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.18s, transform 0.12s; }
+    .btn-w-suggest:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+    /* FLOATING ACTION BUTTON */
+    .fab-suggest { position: fixed; bottom: 28px; right: 28px; z-index: 500; background: var(--primary); color: white; border: none; border-radius: 50px; padding: 13px 18px; font-size: 20px; cursor: pointer; box-shadow: 0 6px 24px rgba(15,76,129,0.4); display: flex; align-items: center; gap: 8px; transition: background 0.18s, transform 0.18s, box-shadow 0.18s; animation: fadeUp 0.6s 0.8s ease both; }
+    .fab-suggest:hover { background: var(--primary-light); transform: translateY(-3px); box-shadow: 0 10px 32px rgba(15,76,129,0.45); }
+    .fab-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+
+    /* STANDALONE SUGGESTION MODAL */
+    .suggestion-modal-content { padding: 0 !important; max-width: 460px !important; text-align: left !important; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; border-radius: 18px !important; }
+    .suggestion-modal-head { padding: 20px 22px 16px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .suggestion-modal-close { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.15s; flex-shrink: 0; font-family: 'Sora',sans-serif; }
+    .suggestion-modal-close:hover { background: var(--danger); color: white; border-color: var(--danger); }
+    .suggestion-feed-wrap { padding: 14px 22px 10px; flex-shrink: 0; }
+    .suggestion-feed-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .suggestion-feed { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .suggestion-feed-empty { text-align: center; color: var(--text-light); font-size: 12.5px; padding: 18px 0; }
+    .suggestion-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; }
+    .suggestion-item-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; gap: 8px; }
+    .suggestion-author { display: flex; align-items: center; gap: 7px; }
+    .suggestion-avatar { width: 24px; height: 24px; border-radius: 50%; color: white; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .suggestion-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .suggestion-time { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-light); white-space: nowrap; }
+    .suggestion-text { font-size: 12.5px; color: var(--text); line-height: 1.6; word-break: break-word; }
+    .suggestion-input-area { padding: 14px 22px 20px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; background: var(--surface2); }
+    .suggestion-input-area select, .suggestion-input-area textarea { width: 100%; padding: 9px 13px; font-family: 'Sora', sans-serif; font-size: 13px; background: white; border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color 0.18s, box-shadow 0.18s; -webkit-appearance: none; }
+    .suggestion-input-area select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+    .suggestion-input-area select:focus, .suggestion-input-area textarea:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px var(--primary-glow); background: #fff; }
+    .suggestion-input-area textarea { resize: vertical; min-height: 68px; }
+    .suggestion-input-area textarea::placeholder { color: var(--text-light); }
+    .suggestion-count-bar { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary-glow); border: 1px solid #c7d8ed; border-radius: 8px; padding: 8px 14px; margin-bottom: 2px; }
+    .suggestion-count-num { font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 700; color: var(--primary); line-height: 1; }
+    .suggestion-count-label { font-size: 11px; color: var(--text-muted); font-weight: 500; line-height: 1.3; }
+    #sSuggestionMsg { font-size: 12px; font-weight: 500; min-height: 14px; color: var(--danger); }
+    #sSuggestionMsg.ok { color: var(--accent); }
+    .btn-s-submit { padding: 11px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.18s, transform 0.12s; }
+    .btn-s-submit:hover { background: var(--primary-light); transform: translateY(-1px); }
+
     @media (max-width: 900px) { .two-col { grid-template-columns:1fr; } .stats-row { grid-template-columns:1fr 1fr; } .form-card { position:static; } }
-    @media (max-width: 500px) { .stats-row { grid-template-columns:1fr; } .topnav { padding:0 14px; } .welcome-body, .welcome-footer { padding-left: 20px; padding-right: 20px; } .welcome-hero { padding: 24px 20px 20px; } }
+    @media (max-width: 500px) { .stats-row { grid-template-columns:1fr; } .topnav { padding:0 14px; } .welcome-body, .welcome-footer { padding-left: 20px; padding-right: 20px; } .welcome-hero { padding: 24px 20px 20px; } .fab-suggest { bottom: 16px; right: 16px; } .fab-label { display: none; } }
   </style>
 </head>
 <body>
 
-<!-- ── V2.1 WELCOME MODAL ────────────────────── -->
+<!-- ── V2.2 COMING SOON MODAL ────────────────────── -->
 <div id="welcomeModal">
   <div class="welcome-box">
     <div class="welcome-hero">
       <div class="welcome-version-tag">
         <div class="welcome-version-dot"></div>
-        VERSION 2.1 — WHAT'S NEW
+        VERSION 2.2 — COMING SOON
       </div>
-      <div class="welcome-title">KSBCDC Audit<br>System <span>Update</span> 🎉</div>
-      <div class="welcome-subtitle">Fresh improvements to make your audit workflow faster, safer, and more complete.</div>
+      <div class="welcome-title">Something<br><span>Exciting</span> is Coming 🚀</div>
+      <div class="welcome-subtitle">We're working on the next big update. Help shape it by sharing your ideas below!</div>
     </div>
+
     <div class="welcome-body">
-      <div class="welcome-section-label">✦ New Features in v2.1</div>
+      <div class="welcome-section-label">✦ Sneak Peek — v2.2 Features</div>
       <div class="welcome-features">
         <div class="wf-item">
           <div class="wf-icon purple">✏️</div>
           <div>
-            <div class="wf-title">One-Time Edit per Loan</div>
-            <div class="wf-desc">Each verified loan now has a single-use Edit button. Once used, it's locked — keeping records tamper-resistant while allowing genuine corrections.</div>
+            <div class="wf-title">Unlimited Edits with Edit Log</div>
+            <div class="wf-desc">Edit any verified loan as many times as needed — every change will be tracked in a full edit history log so nothing is ever lost.</div>
           </div>
         </div>
         <div class="wf-item">
-          <div class="wf-icon orange">🔐</div>
+          <div class="wf-icon green">🔔</div>
           <div>
-            <div class="wf-title">Mandatory Fields for Ongoing Loans</div>
-            <div class="wf-desc">Loan Number, Checked By, and Scheme are now required even when marking a loan as "Ongoing" — so records are never incomplete.</div>
-          </div>
-        </div>
-        <div class="wf-item">
-          <div class="wf-icon blue">📋</div>
-          <div>
-            <div class="wf-title">Ongoing Loan Details Preserved</div>
-            <div class="wf-desc">The auditor name and scheme selected when marking a loan ongoing are now stored and displayed in the table immediately.</div>
-          </div>
-        </div>
-        <div class="wf-item">
-          <div class="wf-icon green">🏷️</div>
-          <div>
-            <div class="wf-title">Edited Badge on Records</div>
-            <div class="wf-desc">Any loan that has been edited shows a clear "Edited" badge so auditors can instantly identify modified entries.</div>
+            <div class="wf-title">More improvements on the way…</div>
+            <div class="wf-desc">Based on your team's feedback! Drop your suggestion below to influence what gets built next.</div>
           </div>
         </div>
       </div>
+
+      <!-- SUGGESTION BOX INSIDE MODAL -->
+      <div class="modal-suggestion-divider">💬 Share Your Suggestion</div>
+      <div class="modal-suggestion-area">
+        <select id="wSuggestionAuthor">
+          <option value="">— Select your name —</option>
+          <option value="Muhammed Nihal">Muhammed Nihal</option>
+          <option value="Ameena Nasser">Ameena Nasser</option>
+          <option value="CA Hiba Resmin">CA Hiba Resmin</option>
+          <option value="Muhammed Shahid N">Muhammed Shahid N</option>
+          <option value="Yaseen irfan">Yaseen irfan</option>
+        </select>
+        <textarea id="wSuggestionText" placeholder="What feature or improvement would you love to see in v2.2?"></textarea>
+        <p id="wSuggestionMsg"></p>
+        <button class="btn-w-suggest" onclick="submitWelcomeSuggestion()">💬 Submit Suggestion</button>
+      </div>
     </div>
+
     <div class="welcome-footer">
-      <div class="welcome-dismiss-note">Version 2.01</div>
+      <div class="welcome-dismiss-note">You can always add suggestions via the 💬 button</div>
       <button class="btn-welcome-close" onclick="closeWelcomeModal()">Got it — Let's Go 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FLOATING SUGGESTION BUTTON ───────────── -->
+<button class="fab-suggest" id="fabSuggest" onclick="openSuggestionModal()" title="Share a suggestion">
+  💬
+  <span class="fab-label">Suggest</span>
+</button>
+
+<!-- ── STANDALONE SUGGESTION MODAL ──────────── -->
+<div id="suggestionModal" class="popup">
+  <div class="popup-content suggestion-modal-content">
+    <div class="suggestion-modal-head">
+      <div>
+        <div style="font-size:24px;margin-bottom:4px;">💬</div>
+        <h2 style="font-size:17px;margin-bottom:2px;">Team Suggestion Box</h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:0;">Your feedback goes straight to the admin — help shape v2.2!</p>
+      </div>
+      <button class="suggestion-modal-close" onclick="closeSuggestionModal()">✕</button>
+    </div>
+
+    <div class="suggestion-input-area">
+      <div class="suggestion-count-bar">
+        <span class="suggestion-count-num" id="sCountDisplay">—</span>
+        <span class="suggestion-count-label">suggestions<br>submitted so far</span>
+      </div>
+      <select id="sAuthor">
+        <option value="">— Select your name —</option>
+        <option value="Muhammed Nihal">Muhammed Nihal</option>
+        <option value="Ameena Nasser">Ameena Nasser</option>
+        <option value="CA Hiba Resmin">CA Hiba Resmin</option>
+        <option value="Muhammed Shahid N">Muhammed Shahid N</option>
+        <option value="Yaseen irfan">Yaseen irfan</option>
+      </select>
+      <textarea id="sText" placeholder="Type your suggestion here…"></textarea>
+      <p id="sSuggestionMsg"></p>
+      <button class="btn-s-submit" onclick="submitSuggestion()">💬 Submit</button>
     </div>
   </div>
 </div>
@@ -679,7 +769,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue }
+  import { getDatabase, ref, set, push, get, onValue, runTransaction }
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
@@ -706,36 +796,15 @@
   let editTargetLoanNo = null;
   let statusCheckTimer = null;
 
-  // ── WELCOME MODAL (show for 2 days after v2.1 launch) ────
-  const V21_LAUNCH_DATE = new Date('2025-01-01').getTime(); // set to launch date
-  const WELCOME_KEY = 'ksbcdc_v21_welcome_dismissed';
-  function shouldShowWelcome() {
-    const dismissed = localStorage.getItem(WELCOME_KEY);
-    if (!dismissed) return true;
-    const twodays = 2 * 24 * 60 * 60 * 1000;
-    // Show if dismissed more than 2 days ago means we never reset, so:
-    // Actually: show until 2 days after the launch date
-    const now = Date.now();
-    // Show the modal until 2 days have passed since launch or until dismissed
-    // Re-show each session if within 2 days of launch
-    const cutoff = V21_LAUNCH_DATE + twodays;
-    if (now < cutoff && dismissed !== 'forever') return true;
-    return false;
-  }
+  // ── WELCOME MODAL (show for 2 days per session) ────
   function initWelcome() {
-    // Simple approach: store the first-seen timestamp
-    // Show until 2 days after first time they saw the modal
-    const firstSeen = localStorage.getItem('ksbcdc_v21_first_seen');
+    const firstSeen = localStorage.getItem('ksbcdc_v22_first_seen');
     if (!firstSeen) {
-      localStorage.setItem('ksbcdc_v21_first_seen', Date.now().toString());
-      showWelcomeModal();
-      return;
+      localStorage.setItem('ksbcdc_v22_first_seen', Date.now().toString());
+      showWelcomeModal(); return;
     }
     const elapsed = Date.now() - parseInt(firstSeen, 10);
-    const twoDays = 2 * 24 * 60 * 60 * 1000;
-    if (elapsed < twoDays) {
-      showWelcomeModal();
-    }
+    if (elapsed < 2 * 24 * 60 * 60 * 1000) showWelcomeModal();
   }
   function showWelcomeModal() {
     document.getElementById('welcomeModal').style.display = 'flex';
@@ -1179,6 +1248,76 @@
     const a=document.createElement('a');
     a.href=url;a.download=`ksbcdc_audit_v21_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();URL.revokeObjectURL(url);
+  };
+  // ── SUGGESTION MODAL ──────────────────────────
+  const AVATAR_COLORS = {
+    'Muhammed Nihal':    '#0f4c81',
+    'Ameena Nasser':     '#9d174d',
+    'CA Hiba Resmin':    '#065f46',
+    'Muhammed Shahid N': '#7c3aed',
+    'Yaseen irfan':      '#9a3412',
+  };
+  function getInitials(name) {
+    return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  window.openSuggestionModal = function() {
+    document.getElementById('suggestionModal').style.display = 'flex';
+  };
+  // Live count from Firebase
+  onValue(ref(db, "suggestionCount"), snap => {
+    const count = snap.val() || 1;
+    const el = document.getElementById('sCountDisplay');
+    if (el) el.textContent = count;
+  });
+  window.closeSuggestionModal = function() {
+    document.getElementById('suggestionModal').style.display = 'none';
+  };
+  document.getElementById('suggestionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeSuggestionModal();
+  });
+
+  // ── SUGGESTION SUBMIT HELPER ──────────────────
+  async function submitSuggestionData(author, text, msgEl) {
+    msgEl.className = ''; msgEl.textContent = '';
+    if (!author) { msgEl.textContent = '⚠ Please select your name.'; return; }
+    if (!text)   { msgEl.textContent = '⚠ Please write your suggestion.'; return; }
+    try {
+      // Atomic counter starting from 2
+      let suggestionNo;
+      await runTransaction(ref(db, "suggestionCount"), current => {
+        suggestionNo = (current || 1) + 1;
+        return suggestionNo;
+      });
+      await push(ref(db, "suggestions"), { author, text, timestamp: Date.now(), no: suggestionNo });
+      msgEl.className = 'ok';
+      msgEl.textContent = `✅ Suggestion #${suggestionNo} submitted! Thank you 🙌`;
+      setTimeout(() => { msgEl.textContent = ''; msgEl.className = ''; }, 4000);
+    } catch(e) { msgEl.textContent = 'Error: ' + e.message; }
+  }
+
+  // Submit from standalone modal
+  window.submitSuggestion = async function() {
+    const author = document.getElementById('sAuthor').value.trim();
+    const text   = document.getElementById('sText').value.trim();
+    const msgEl  = document.getElementById('sSuggestionMsg');
+    await submitSuggestionData(author, text, msgEl);
+    if (msgEl.className === 'ok') {
+      document.getElementById('sText').value = '';
+      document.getElementById('sAuthor').value = '';
+    }
+  };
+
+  // Submit from welcome modal
+  window.submitWelcomeSuggestion = async function() {
+    const author = document.getElementById('wSuggestionAuthor').value.trim();
+    const text   = document.getElementById('wSuggestionText').value.trim();
+    const msgEl  = document.getElementById('wSuggestionMsg');
+    await submitSuggestionData(author, text, msgEl);
+    if (msgEl.className === 'ok') {
+      document.getElementById('wSuggestionText').value = '';
+      document.getElementById('wSuggestionAuthor').value = '';
+    }
   };
 </script>
 </body>
