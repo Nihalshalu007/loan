@@ -2,13 +2,15 @@ name: Restore Site at 11AM IST
 
 on:
   schedule:
-    # 12:55 AM IST = 07:25 PM UTC — retest
-    - cron: '25 19 * * *'
+    - cron: '38 19 * * *'  # 1:08 AM IST = 19:38 UTC
   workflow_dispatch:
 
 jobs:
   restore:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -26,6 +28,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html index_backup.html || true
+          git add .
           git diff --cached --quiet || git commit -m "chore: restore site after maintenance (v3.3 live)"
           git push
