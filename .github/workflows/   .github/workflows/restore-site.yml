@@ -2,9 +2,9 @@ name: Restore Site at 11AM IST
 
 on:
   schedule:
-    # 12:45 AM IST = 07:15 PM UTC (previous day) — test run
-    - cron: '15 19 * * *'
-  workflow_dispatch: # ← use this to trigger manually today if needed
+    # 12:55 AM IST = 07:25 PM UTC — retest
+    - cron: '25 19 * * *'
+  workflow_dispatch:
 
 jobs:
   restore:
