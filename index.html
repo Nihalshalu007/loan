@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KSBCDC Internal Audit — v3.3</title>
+  <title>KSBCDC Internal Audit — v3.4</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -222,7 +222,19 @@
     .sp-edu{background:#d1fae5;color:#065f46;}
     .sp-return{background:#ffedd5;color:#9a3412;}
     .sp-self{background:#ede9fe;color:#5b21b6;}
+    .sp-cds{background:#e0e7ff;color:#3730a3;}
+    .sp-other{background:#f1f5f9;color:#475569;font-style:italic;}
     .sp-none{background:#f1f5f9;color:#94a3b8;font-style:italic;}
+    .fund-pill{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+    .fp-ksbcdc{background:#dbeafe;color:#1d4ed8;}
+    .fp-nbcfdc{background:#d1fae5;color:#065f46;}
+    .fp-nmdfc{background:#fce7f3;color:#9d174d;}
+    .fp-nskfdc{background:#ffedd5;color:#9a3412;}
+    .fp-other{background:#fefce8;color:#854d0e;}
+    .fp-none{background:#f1f5f9;color:#94a3b8;font-style:italic;}
+    .other-specify-wrap{margin-top:6px;display:none;}
+    .other-specify-wrap input{border-color:var(--warn);background:var(--warn-light);}
+    select#fund{border-color:var(--accent);background-color:var(--accent-light);}
     .remarks-cell{max-width:150px;}
     .remarks-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.5;color:var(--text);word-break:break-word;}
     .remarks-readmore{display:inline-block;margin-top:2px;font-size:10.5px;font-weight:700;color:var(--primary);cursor:pointer;border:none;background:none;font-family:var(--font-body);padding:0;}
@@ -764,7 +776,7 @@
   <div class="login-brand">
     <div class="login-brand-icon">🏦</div>
     <div class="login-brand-title">KSBCDC Internal Audit</div>
-    <div class="login-brand-sub">Loan Document Verification System — v3.3</div>
+    <div class="login-brand-sub">Loan Document Verification System — v3.4</div>
   </div>
   <div class="login-card">
     <div class="login-heading">Who are you?</div>
@@ -904,7 +916,7 @@
   </div>
   <div class="nav-right">
     <div class="nav-time" id="liveClock"></div>
-    <div class="nav-version">v3.3</div>
+    <div class="nav-version">v3.4</div>
     <div class="nav-badge" id="statusBadge">LIVE</div>
     <div class="nav-icon-btn" id="navThemeBtn" onclick="openThemeModal()" title="Change theme" style="display:none;">🎨</div>
     <div class="nav-icon-btn" id="navInfoBtn" onclick="openAppInfoModal()" title="App Info & Updates" style="display:none;">
@@ -986,14 +998,33 @@
         <div id="loanStatusBanner"></div>
         <div class="field-group">
           <label>Loan Scheme <span class="req">*</span></label>
-          <select id="scheme">
+          <select id="scheme" onchange="SCHEME.handleOther('scheme','schemeOtherWrap')">
             <option value="">— Select scheme —</option>
             <option>Micro Credit Loan</option>
             <option>Ente Veedu Loan Scheme</option>
             <option>Education Loan</option>
             <option>Self Employment Return Scheme</option>
             <option>Self Employment Scheme</option>
+            <option>CDS</option>
+            <option value="__other__">Other (specify)</option>
           </select>
+          <div class="other-specify-wrap" id="schemeOtherWrap">
+            <input type="text" id="schemeOtherText" placeholder="Enter scheme name…">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Fund</label>
+          <select id="fund" onchange="SCHEME.handleOther('fund','fundOtherWrap')">
+            <option value="">— Select fund —</option>
+            <option>KSBCDC</option>
+            <option>NBCFDC</option>
+            <option>NMDFC</option>
+            <option>NSKFDC</option>
+            <option value="__other__">Other (specify)</option>
+          </select>
+          <div class="other-specify-wrap" id="fundOtherWrap">
+            <input type="text" id="fundOtherText" placeholder="Enter fund name…">
+          </div>
         </div>
         <div class="field-group">
           <label>Customer Name</label>
@@ -1041,6 +1072,7 @@
             <th onclick="sortTable('loanNo')">Loan No ↕</th>
             <th onclick="sortTable('name')">Name ↕</th>
             <th onclick="sortTable('scheme')">Scheme ↕</th>
+            <th onclick="sortTable('fund')">Fund ↕</th>
             <th onclick="sortTable('amount')">Amount ↕</th>
             <th onclick="sortTable('checkedBy')">Checked By ↕</th>
             <th>Remarks</th>
@@ -1048,7 +1080,7 @@
             <th>Status</th>
             <th>Actions</th>
           </tr></thead>
-          <tbody id="tableBody"><tr><td colspan="9" class="no-data"><div class="icon">⏳</div>Loading records…</td></tr></tbody>
+          <tbody id="tableBody"><tr><td colspan="10" class="no-data"><div class="icon">⏳</div>Loading records…</td></tr></tbody>
         </table>
       </div>
       <div class="pagination">
@@ -1076,7 +1108,8 @@
     <div style="font-size:26px;margin-bottom:7px;">✅</div>
     <h2>Complete Verification</h2>
     <p class="modal-sub">Fill in remaining details to mark this loan as fully verified.</p>
-    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="m_scheme"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option></select></div>
+    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="m_scheme" onchange="SCHEME.handleOther('m_scheme','m_schemeOtherWrap')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="m_schemeOtherWrap"><input type="text" id="m_schemeOtherText" placeholder="Enter scheme name…"></div></div>
+    <div class="modal-field field-group"><label>Fund</label><select id="m_fund" onchange="SCHEME.handleOther('m_fund','m_fundOtherWrap')"><option value="">— Select fund —</option><option>KSBCDC</option><option>NBCFDC</option><option>NMDFC</option><option>NSKFDC</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="m_fundOtherWrap"><input type="text" id="m_fundOtherText" placeholder="Enter fund name…"></div></div>
     <div class="modal-field field-group"><label>Customer Name</label><input type="text" id="m_name" placeholder="Customer name…"></div>
     <div class="modal-field field-group"><label>Loan Amount</label><input type="number" id="m_amount" placeholder="Loan amount…"></div>
     <div class="modal-field field-group"><label>Checked By</label><div class="locked-user-display"><span class="lock-icon">🔒</span><span id="m_checkedByName">—</span></div><input type="hidden" id="m_checkedBy"></div>
@@ -1095,7 +1128,8 @@
     <div style="font-size:26px;margin-bottom:7px;">✏️</div>
     <h2>Edit Loan Record</h2>
     <p class="modal-sub">Update any details below. <strong>Unlimited edits</strong> are allowed.</p>
-    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="e_scheme"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option></select></div>
+    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="e_scheme" onchange="SCHEME.handleOther('e_scheme','e_schemeOtherWrap')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="e_schemeOtherWrap"><input type="text" id="e_schemeOtherText" placeholder="Enter scheme name…"></div></div>
+    <div class="modal-field field-group"><label>Fund</label><select id="e_fund" onchange="SCHEME.handleOther('e_fund','e_fundOtherWrap')"><option value="">— Select fund —</option><option>KSBCDC</option><option>NBCFDC</option><option>NMDFC</option><option>NSKFDC</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="e_fundOtherWrap"><input type="text" id="e_fundOtherText" placeholder="Enter fund name…"></div></div>
     <div class="modal-field field-group"><label>Customer Name</label><input type="text" id="e_name" placeholder="Customer name…"></div>
     <div class="modal-field field-group"><label>Loan Amount</label><input type="number" id="e_amount" placeholder="Loan amount…"></div>
     <div class="modal-field field-group"><label>Checked By <span class="req">*</span></label><select id="e_checkedBy"><option value="">— Select auditor —</option></select></div>
@@ -1133,7 +1167,7 @@
     <div class="welcome-hero">
       <div class="welcome-hero-inner">
         <div class="welcome-hero-text">
-          <div class="welcome-version-tag"><div class="welcome-version-dot"></div>Current version — v3.3</div>
+          <div class="welcome-version-tag"><div class="welcome-version-dot"></div>Current version — v3.4</div>
           <div class="welcome-title">KSBCDC Internal<br><span>Audit System</span></div>
           <div class="welcome-subtitle">A complete loan document verification platform for the KSBCDC audit team — built for speed, accuracy, and real-time collaboration.</div>
           <div class="welcome-hero-badges">
@@ -1201,7 +1235,7 @@
         <div class="wj-entry current">
           <div class="wj-dot"></div>
           <div class="wj-head">
-            <span class="wj-version">v3.3</span>
+            <span class="wj-version">v3.4</span>
             <span class="wj-vname">Daily Insights & Status</span>
             <span class="wj-current-badge">CURRENT</span>
             <span class="wj-date"></span>
@@ -1382,6 +1416,45 @@
 
   const ADMIN_USER   = 'Muhammed Nihal';
   const USER_KEY     = 'ksbcdc_current_user';
+
+  // ── MODULE: SCHEME & FUND ──────────────────────────────
+  const SCHEME = {
+    KNOWN_SCHEMES: ['Micro Credit Loan','Ente Veedu Loan Scheme','Education Loan','Self Employment Return Scheme','Self Employment Scheme','CDS'],
+    KNOWN_FUNDS:   ['KSBCDC','NBCFDC','NMDFC','NSKFDC'],
+
+    // Show/hide the "other specify" input when __other__ is selected
+    handleOther(selId, wrapId){
+      const sel=document.getElementById(selId), wrap=document.getElementById(wrapId);
+      if(sel&&wrap) wrap.style.display=(sel.value==='__other__')?'block':'none';
+    },
+
+    // Get the resolved value from a select (handles __other__ → text input)
+    get(selId, otherTextId){
+      const sel=document.getElementById(selId); if(!sel) return '';
+      if(sel.value==='__other__'){ const t=document.getElementById(otherTextId); return t?t.value.trim():''; }
+      return sel.value.trim();
+    },
+
+    // Set a select (and other-wrap) from a stored value
+    set(selId, wrapId, otherTextId, val){
+      const sel=document.getElementById(selId), wrap=document.getElementById(wrapId), inp=document.getElementById(otherTextId);
+      if(!sel) return;
+      const known=(selId.includes('fund')?this.KNOWN_FUNDS:this.KNOWN_SCHEMES);
+      if(!val||known.includes(val)){ sel.value=val||''; if(wrap) wrap.style.display='none'; }
+      else { sel.value='__other__'; if(wrap) wrap.style.display='block'; if(inp) inp.value=val; }
+    },
+
+    // CSS class for scheme pill
+    schemePillClass(s){ if(!s) return'sp-none'; const l=s.toLowerCase(); if(l.includes('micro')) return'sp-micro'; if(l.includes('veedu')) return'sp-veedu'; if(l.includes('edu')) return'sp-edu'; if(l.includes('return')) return'sp-return'; if(l.includes('self')) return'sp-self'; if(l==='cds') return'sp-cds'; return'sp-other'; },
+
+    // CSS class for fund pill
+    fundPillClass(f){ if(!f) return'fp-none'; const l=f.toLowerCase(); if(l==='ksbcdc') return'fp-ksbcdc'; if(l==='nbcfdc') return'fp-nbcfdc'; if(l==='nmdfc') return'fp-nmdfc'; if(l==='nskfdc') return'fp-nskfdc'; return'fp-other'; },
+
+    // Reset main form scheme+fund
+    resetForm(){ document.getElementById('scheme').value=''; document.getElementById('schemeOtherWrap').style.display='none'; document.getElementById('schemeOtherText').value=''; document.getElementById('fund').value=''; document.getElementById('fundOtherWrap').style.display='none'; document.getElementById('fundOtherText').value=''; }
+  };
+  window.SCHEME=SCHEME;
+  // ──────────────────────────────────────────────────────
   const THEME_PREFIX = 'ksbcdc_theme_';
   const CHAT_READ_KEY = 'ksbcdc_chat_last_read';
 
@@ -1440,7 +1513,7 @@
   function formatTimeShort(ts){ return new Date(ts).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); }
   function isToday(ts){ const d=new Date(ts),t=new Date(); return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear(); }
   function isYesterday(ts){ const d=new Date(ts),y=new Date(); y.setDate(y.getDate()-1); return d.getDate()===y.getDate()&&d.getMonth()===y.getMonth()&&d.getFullYear()===y.getFullYear(); }
-  function schemePillClass(s){ if(!s)return'sp-none'; const l=s.toLowerCase(); if(l.includes('micro'))return'sp-micro'; if(l.includes('veedu'))return'sp-veedu'; if(l.includes('edu'))return'sp-edu'; if(l.includes('return'))return'sp-return'; if(l.includes('self'))return'sp-self'; return'sp-none'; }
+  function schemePillClass(s){ return SCHEME.schemePillClass(s); }
   function showPopup(id,dur){ const el=document.getElementById(id); el.style.display='flex'; setTimeout(()=>{ el.style.display='none'; },dur); }
   function currentUser(){ return localStorage.getItem(USER_KEY)||null; }
 
@@ -1967,22 +2040,22 @@
 
   // ── PRE-FILL FORM FROM ONGOING RECORD ──
   function prefillFormFromOngoing(loanNo, od){
-    // Fill scheme if it was saved with the ongoing record
-    if(od.scheme) document.getElementById('scheme').value=od.scheme;
-    // Fill name, amount, remarks if saved
+    if(od.scheme) SCHEME.set('scheme','schemeOtherWrap','schemeOtherText',od.scheme);
+    if(od.fund!==undefined) SCHEME.set('fund','fundOtherWrap','fundOtherText',od.fund||'');
     if(od.name) document.getElementById('name').value=od.name;
     if(od.amount) document.getElementById('amount').value=od.amount;
     if(od.remarks) document.getElementById('remarks').value=od.remarks;
   }
 
-  function setFormDisabled(s){['name','amount','remarks','scheme'].forEach(id=>document.getElementById(id).disabled=s);}
+  function setFormDisabled(s){['name','amount','remarks','scheme','fund'].forEach(id=>document.getElementById(id).disabled=s);}
   function setButtons(d){document.getElementById('btnSubmit').disabled=d;document.getElementById('btnOngoing').disabled=d;}
   function clearMsg(){const m=document.getElementById('msg');m.textContent='';m.className='';}
 
   window.markOngoing=async function(){
     const loanNo=document.getElementById('loanNo').value.trim(),
           checkedBy=document.getElementById('checkedBy').value.trim(),
-          scheme=document.getElementById('scheme').value.trim(),
+          scheme=SCHEME.get('scheme','schemeOtherText'),
+          fund=SCHEME.get('fund','fundOtherText'),
           name=document.getElementById('name').value.trim(),
           amount=document.getElementById('amount').value.trim(),
           remarks=document.getElementById('remarks').value.trim(),
@@ -1993,16 +2066,13 @@
     if(!scheme){msgEl.textContent='⚠ Loan Scheme required.';return;}
     if(latestVerified[loanNo]){msgEl.textContent='⚠ Already verified!';return;}
     if(latestOngoing[loanNo]){msgEl.textContent='⚠ Already ongoing!';return;}
-    // ── Save all entered details with the ongoing record ──
     await set(ref(db,'ongoing/'+loanNo),{
-      loanNo, startedBy:checkedBy, scheme,
+      loanNo, startedBy:checkedBy, scheme, fund: fund||'',
       name: name||'', amount: amount||'', remarks: remarks||'',
       startedAt:Date.now()
     });
     document.getElementById('popupOngoingNo').textContent=`Loan # ${loanNo}`;
     showPopup('ongoingPopup',2600);
-    // Do NOT clear the form — keep all fields so user can directly hit Submit
-    // Just update the banner state
     checkLoanStatus();
   };
 
@@ -2014,7 +2084,10 @@
     document.getElementById('m_checkedBy').value=me||'';
     document.getElementById('m_checkedByName').textContent=me||'—';
     // Pre-fill from ongoing data or current form fields
-    document.getElementById('m_scheme').value=od&&od.scheme?od.scheme:document.getElementById('scheme').value;
+    const mScheme=od&&od.scheme?od.scheme:SCHEME.get('scheme','schemeOtherText');
+    const mFund=od&&od.fund!==undefined?od.fund:SCHEME.get('fund','fundOtherText');
+    SCHEME.set('m_scheme','m_schemeOtherWrap','m_schemeOtherText',mScheme);
+    SCHEME.set('m_fund','m_fundOtherWrap','m_fundOtherText',mFund);
     document.getElementById('m_name').value=od&&od.name?od.name:document.getElementById('name').value;
     document.getElementById('m_amount').value=od&&od.amount?od.amount:document.getElementById('amount').value;
     document.getElementById('m_remarks').value=od&&od.remarks?od.remarks:document.getElementById('remarks').value;
@@ -2022,21 +2095,29 @@
   };
   window.closeCompleteModal=function(){document.getElementById('completeModal').style.display='none';completeTargetLoanNo=null;};
   window.confirmComplete=async function(){
-    const loanNo=completeTargetLoanNo,scheme=document.getElementById('m_scheme').value.trim(),name=document.getElementById('m_name').value.trim(),amount=document.getElementById('m_amount').value.trim(),checkedBy=document.getElementById('m_checkedBy').value.trim(),remarks=document.getElementById('m_remarks').value.trim(),mMsg=document.getElementById('m_msg');
+    const loanNo=completeTargetLoanNo,
+          scheme=SCHEME.get('m_scheme','m_schemeOtherText'),
+          fund=SCHEME.get('m_fund','m_fundOtherText'),
+          name=document.getElementById('m_name').value.trim(),
+          amount=document.getElementById('m_amount').value.trim(),
+          checkedBy=document.getElementById('m_checkedBy').value.trim(),
+          remarks=document.getElementById('m_remarks').value.trim(),
+          mMsg=document.getElementById('m_msg');
     if(!scheme){mMsg.textContent='⚠ Please select a Loan Scheme.';return;}
     if(!checkedBy){mMsg.textContent='⚠ Not logged in.';return;}
     try{
-      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
+      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
       await set(ref(db,'ongoing/'+loanNo),null);
       justAddedLoanNo=loanNo; closeCompleteModal();
       document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
-      if(document.getElementById('loanNo').value.trim()===loanNo){ ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value=''); document.getElementById('scheme').value=''; checkLoanStatus(); }
+      if(document.getElementById('loanNo').value.trim()===loanNo){ ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value=''); SCHEME.resetForm(); checkLoanStatus(); }
     }catch(e){mMsg.textContent='Error: '+e.message;}
   };
   document.getElementById('completeModal').addEventListener('click',function(e){if(e.target===this)closeCompleteModal();});
 
   window.saveData=async function(){
-    const scheme=document.getElementById('scheme').value.trim(),
+    const scheme=SCHEME.get('scheme','schemeOtherText'),
+          fund=SCHEME.get('fund','fundOtherText'),
           name=document.getElementById('name').value.trim(),
           loanNo=document.getElementById('loanNo').value.trim(),
           amount=document.getElementById('amount').value.trim(),
@@ -2048,33 +2129,29 @@
     if(!scheme){msgEl.textContent='⚠ Please select a Loan Scheme.';return;}
     if(!checkedBy){msgEl.textContent='⚠ Please log in first.';return;}
     if(latestVerified[loanNo]){msgEl.textContent='⚠ Already verified!';return;}
-    // ── If this loan is ongoing by current user, allow direct submit (clears ongoing) ──
     if(latestOngoing[loanNo]){
       const od=latestOngoing[loanNo];
-      if(od.startedBy&&od.startedBy!==checkedBy){
-        msgEl.textContent='⚠ Loan is Ongoing — started by '+od.startedBy+'.';return;
-      }
-      // Current user's own ongoing loan — submit and clear ongoing
+      if(od.startedBy&&od.startedBy!==checkedBy){msgEl.textContent='⚠ Loan is Ongoing — started by '+od.startedBy+'.';return;}
       try{
-        await set(ref(db,'loans/'+loanNo),{loanNo,scheme,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
+        await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
         await set(ref(db,'ongoing/'+loanNo),null);
         justAddedLoanNo=loanNo;
         document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
         ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
-        document.getElementById('scheme').value=''; checkLoanStatus();
+        SCHEME.resetForm(); checkLoanStatus();
       }catch(e){msgEl.textContent='Error: '+e.message;}
       return;
     }
     try{
-      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
+      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
       justAddedLoanNo=loanNo;
       document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
       ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
-      document.getElementById('scheme').value=''; checkLoanStatus();
+      SCHEME.resetForm(); checkLoanStatus();
     }catch(e){msgEl.textContent='Error: '+e.message;}
   };
 
-  window.openEditModal=function(loanNo){ const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;} editTargetLoanNo=loanNo; document.getElementById('e_scheme').value=loan.scheme||''; document.getElementById('e_name').value=loan.name||''; document.getElementById('e_amount').value=loan.amount||''; document.getElementById('e_checkedBy').value=loan.checkedBy||''; document.getElementById('e_remarks').value=loan.remarks||''; document.getElementById('e_msg').textContent=''; document.getElementById('editModal').style.display='flex'; };
+  window.openEditModal=function(loanNo){ const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;} editTargetLoanNo=loanNo; SCHEME.set('e_scheme','e_schemeOtherWrap','e_schemeOtherText',loan.scheme||''); SCHEME.set('e_fund','e_fundOtherWrap','e_fundOtherText',loan.fund||''); document.getElementById('e_name').value=loan.name||''; document.getElementById('e_amount').value=loan.amount||''; document.getElementById('e_checkedBy').value=loan.checkedBy||''; document.getElementById('e_remarks').value=loan.remarks||''; document.getElementById('e_msg').textContent=''; document.getElementById('editModal').style.display='flex'; };
   window.closeEditModal=function(){document.getElementById('editModal').style.display='none';editTargetLoanNo=null;};
 
   window.revertToOngoing=async function(){
@@ -2099,6 +2176,7 @@
         loanNo,
         startedBy:existing.checkedBy||editor,
         scheme:existing.scheme||'',
+        fund:existing.fund||'',
         name:existing.name||'',
         amount:existing.amount||'',
         remarks:existing.remarks||'',
@@ -2114,17 +2192,24 @@
   };
 
   window.confirmEdit=async function(){
-    const loanNo=editTargetLoanNo,scheme=document.getElementById('e_scheme').value.trim(),name=document.getElementById('e_name').value.trim(),amount=document.getElementById('e_amount').value.trim(),checkedBy=document.getElementById('e_checkedBy').value.trim(),remarks=document.getElementById('e_remarks').value.trim(),eMsg=document.getElementById('e_msg');
+    const loanNo=editTargetLoanNo,
+          scheme=SCHEME.get('e_scheme','e_schemeOtherText'),
+          fund=SCHEME.get('e_fund','e_fundOtherText'),
+          name=document.getElementById('e_name').value.trim(),
+          amount=document.getElementById('e_amount').value.trim(),
+          checkedBy=document.getElementById('e_checkedBy').value.trim(),
+          remarks=document.getElementById('e_remarks').value.trim(),
+          eMsg=document.getElementById('e_msg');
     if(!scheme){eMsg.textContent='⚠ Loan Scheme required.';return;}
     if(!checkedBy){eMsg.textContent='⚠ Checked By required.';return;}
     const existing=latestVerified[loanNo]; if(!existing){eMsg.textContent='⚠ Record not found.';return;}
     try{
       const editCount=(existing.editCount||0)+1,editor=currentUser()||checkedBy,ts=Date.now();
-      const FIELDS=[{key:'scheme',label:'scheme'},{key:'name',label:'name'},{key:'amount',label:'amount'},{key:'checkedBy',label:'checkedBy'},{key:'remarks',label:'remarks'}];
-      const newVals={scheme,name,amount,checkedBy,remarks};
+      const FIELDS=[{key:'scheme',label:'scheme'},{key:'fund',label:'fund'},{key:'name',label:'name'},{key:'amount',label:'amount'},{key:'checkedBy',label:'checkedBy'},{key:'remarks',label:'remarks'}];
+      const newVals={scheme,fund,name,amount,checkedBy,remarks};
       const changes=FIELDS.filter(f=>String(existing[f.key]||'')!==String(newVals[f.key]||'')).map(f=>({field:f.label,from:String(existing[f.key]||''),to:String(newVals[f.key]||'')}));
-      await set(ref(db,'loans/'+loanNo),{...existing,scheme,name,amount,checkedBy,remarks,editCount,lastEditedAt:ts,lastEditedBy:editor});
-      await push(ref(db,'editLogs'),{loanNo,editedBy:editor,timestamp:ts,editNumber:editCount,changes,snapshot:{scheme,name,amount,checkedBy,remarks}});
+      await set(ref(db,'loans/'+loanNo),{...existing,scheme,fund,name,amount,checkedBy,remarks,editCount,lastEditedAt:ts,lastEditedBy:editor});
+      await push(ref(db,'editLogs'),{loanNo,editedBy:editor,timestamp:ts,editNumber:editCount,changes,snapshot:{scheme,fund,name,amount,checkedBy,remarks}});
       justEditedLoanNo=loanNo; closeEditModal();
       document.getElementById('popupEditLoanNo').textContent=`Loan # ${loanNo}`; showPopup('editSuccessPopup',3000);
     }catch(e){eMsg.textContent='Error: '+e.message;}
@@ -2221,7 +2306,7 @@
   window.setFilter=function(el){ document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); activeFilter=el.dataset.filter; currentPage=1; applyFilters(); };
   window.applyFilters=function(){
     const q=document.getElementById('searchBox').value.toLowerCase();
-    filteredLoans=allLoans.filter(l=>{ let mf=true; if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; else if(activeFilter==='__verified__') mf=l._status==='verified'; else if(activeFilter!=='all') mf=l.checkedBy===activeFilter||l.startedBy===activeFilter; const ms=!q||[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme].some(v=>String(v||'').toLowerCase().includes(q)); return mf&&ms; });
+    filteredLoans=allLoans.filter(l=>{ let mf=true; if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; else if(activeFilter==='__verified__') mf=l._status==='verified'; else if(activeFilter!=='all') mf=l.checkedBy===activeFilter||l.startedBy===activeFilter; const ms=!q||[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme,l.fund].some(v=>String(v||'').toLowerCase().includes(q)); return mf&&ms; });
     sortLoans(); renderTable();
   };
   window.sortTable=function(key){if(sortKey===key)sortAsc=!sortAsc;else{sortKey=key;sortAsc=true;}sortLoans();renderTable();};
@@ -2235,7 +2320,7 @@
     const start=(currentPage-1)*PAGE_SIZE;
     const pageData=filteredLoans.slice(start,start+PAGE_SIZE);
     const me=currentUser();
-    if(!pageData.length){ tbody.innerHTML=`<tr><td colspan="9" class="no-data"><div class="icon">🔍</div>No records found.</td></tr>`; }
+    if(!pageData.length){ tbody.innerHTML=`<tr><td colspan="10" class="no-data"><div class="icon">🔍</div>No records found.</td></tr>`; }
     else {
       tbody.innerHTML=pageData.map((loan,i)=>{
         const isNew=loan.loanNo===justAddedLoanNo,isEdited=loan.loanNo===justEditedLoanNo,isOngoing=loan._status==='ongoing';
@@ -2244,6 +2329,8 @@
         const checkerDisplay=loan.checkedBy||loan.startedBy||'—';
         const sc=loan.scheme||'';
         const schemeTd=sc?`<span class="scheme-pill ${schemePillClass(sc)}">${sc}</span>`:`<span style="color:var(--text-light);font-size:11.5px;font-style:italic;">—</span>`;
+        const fc=loan.fund||'';
+        const fundTd=fc?`<span class="fund-pill ${SCHEME.fundPillClass(fc)}">${fc}</span>`:`<span style="color:var(--text-light);font-size:11.5px;">—</span>`;
         const rm=loan.remarks||'';
         let remarksTd;
         if(!rm) remarksTd=isOngoing?`<span style="color:var(--text-light);font-size:11.5px;font-style:italic;">In progress…</span>`:`<span style="color:var(--text-light);font-size:11.5px;">—</span>`;
@@ -2264,7 +2351,7 @@
         }
 
         const rowClass=isNew?'row-new':(isEdited?'row-edited':'');
-        return `<tr class="${rowClass}" id="row_${loan.loanNo}"><td><span class="loan-no">${loan.loanNo||'—'}</span></td><td>${nameTd}</td><td>${schemeTd}</td><td><span class="amount-cell">${amtStr}</span></td><td>${checkerDisplay}</td><td>${remarksTd}</td><td><span class="date-cell">${dateStr}</span></td><td>${statusBadge}</td><td>${actionBtns}</td></tr>`;
+        return `<tr class="${rowClass}" id="row_${loan.loanNo}"><td><span class="loan-no">${loan.loanNo||'—'}</span></td><td>${nameTd}</td><td>${schemeTd}</td><td>${fundTd}</td><td><span class="amount-cell">${amtStr}</span></td><td>${checkerDisplay}</td><td>${remarksTd}</td><td><span class="date-cell">${dateStr}</span></td><td>${statusBadge}</td><td>${actionBtns}</td></tr>`;
       }).join('');
     }
     window._openRm=function(idx){const loan=filteredLoans[idx];if(!loan)return;openRemarksModal(loan.loanNo,loan.remarks,loan.checkedBy||loan.startedBy,loan.timestamp);};
@@ -2292,8 +2379,8 @@
 
   window.exportCSV=function(){
     if(!filteredLoans.length){alert('No data to export.');return;}
-    const h=['Loan No','Scheme','Name','Amount','Checked By','Remarks','Time','Status','Edit Count'];
-    const rows=filteredLoans.map(l=>[l.loanNo||'',l.scheme||'',l.name||'',l.amount||'',l.checkedBy||l.startedBy||'','"'+(l.remarks||'').replace(/"/g,'""')+'"',l.timestamp?formatDate(l.timestamp):'',l._status||'',l.editCount||0]);
+    const h=['Loan No','Scheme','Fund','Name','Amount','Checked By','Remarks','Time','Status','Edit Count'];
+    const rows=filteredLoans.map(l=>[l.loanNo||'',l.scheme||'',l.fund||'',l.name||'',l.amount||'',l.checkedBy||l.startedBy||'','"'+(l.remarks||'').replace(/"/g,'""')+'"',l.timestamp?formatDate(l.timestamp):'',l._status||'',l.editCount||0]);
     const csv=[h,...rows].map(r=>r.join(',')).join('\n');
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`ksbcdc_audit_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
