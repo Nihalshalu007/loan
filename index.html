@@ -749,6 +749,24 @@
 
     @media(max-width:960px){.two-col{grid-template-columns:1fr;}.stats-row{grid-template-columns:1fr 1fr;}.form-card{position:static;}}
     @media(max-width:520px){.stats-row{grid-template-columns:1fr;}.topnav{padding:0 12px;}.login-grid{grid-template-columns:1fr 1fr;}.fab-label{display:none;}.fab-chat{bottom:14px;right:14px;}.theme-grid{grid-template-columns:repeat(2,1fr);}.ls-row{gap:18px;}.dh-grid{gap:5px;}.dh-day-cell{min-width:50px;}}
+
+    /* ── CDS MULTI-MEMBER CHECKER ── */
+    .cds-checker-wrap{display:none;flex-direction:column;gap:8px;}
+    .cds-checker-wrap.visible{display:flex;}
+    .cds-checker-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+    .cds-badge{display:inline-flex;align-items:center;gap:4px;background:#e0e7ff;color:#3730a3;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:0.4px;}
+    .cds-members-list{display:flex;flex-direction:column;gap:5px;}
+    .cds-member-row{display:flex;align-items:center;gap:6px;}
+    .cds-member-select{flex:1;padding:9px 11px;font-family:var(--font-body);font-size:12.5px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color 0.18s,box-shadow 0.18s;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer;}
+    .cds-member-select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+    .cds-member-num{width:20px;height:20px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-mono);}
+    .btn-cds-remove{width:26px;height:26px;border-radius:6px;background:var(--danger-light);color:var(--danger);border:1.5px solid rgba(229,62,62,0.3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;line-height:1;}
+    .btn-cds-remove:hover{background:var(--danger);color:white;border-color:var(--danger);}
+    .btn-cds-add{display:flex;align-items:center;gap:5px;padding:7px 12px;background:var(--accent-light);color:var(--accent);border:1.5px dashed var(--accent);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:11.5px;font-weight:700;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;}
+    .btn-cds-add:hover{background:var(--accent);color:white;border-style:solid;}
+    .cds-note{font-size:10.5px;color:#6366f1;background:#e0e7ff;border:1px solid #c7d2fe;border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:5px;}
+    .cds-members-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+    .cds-member-chip{display:inline-flex;align-items:center;gap:4px;background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;}
   </style>
 </head>
 <body>
@@ -998,7 +1016,7 @@
         <div id="loanStatusBanner"></div>
         <div class="field-group">
           <label>Loan Scheme <span class="req">*</span></label>
-          <select id="scheme" onchange="SCHEME.handleOther('scheme','schemeOtherWrap')">
+          <select id="scheme" onchange="SCHEME.handleOther('scheme','schemeOtherWrap');CDS_CHECKER.onSchemeChange('scheme','cdsCheckerWrap','singleCheckerWrap','cdsCheckerBadge','cdsMembersList')">
             <option value="">— Select scheme —</option>
             <option>Micro Credit Loan</option>
             <option>Ente Veedu Loan Scheme</option>
@@ -1034,10 +1052,19 @@
           <label>Loan Amount</label>
           <input type="number" id="amount" placeholder="Enter loan amount…">
         </div>
-        <div class="field-group">
-          <label>Checked By <span class="req">*</span></label>
-          <div class="locked-user-display"><span class="lock-icon">🔒</span><span id="checkedByName">—</span></div>
-          <input type="hidden" id="checkedBy">
+        <div class="field-group" id="checkedByGroup">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><label style="margin-bottom:0;">Checked By <span class="req">*</span></label><span id="cdsCheckerBadge" class="cds-badge" style="display:none;">👥 CDS — Add Team Members</span></div>
+          <!-- Single user (non-CDS) -->
+          <div id="singleCheckerWrap">
+            <div class="locked-user-display"><span class="lock-icon">🔒</span><span id="checkedByName">—</span></div>
+            <input type="hidden" id="checkedBy">
+          </div>
+          <!-- Multi-member (CDS) -->
+          <div class="cds-checker-wrap" id="cdsCheckerWrap">
+            <div class="cds-note">👥 CDS — optionally add multiple team members who verified this loan.</div>
+            <div class="cds-members-list" id="cdsMembersList"></div>
+            <button class="btn-cds-add" type="button" onclick="CDS_CHECKER.addMember('cdsMembersList')">＋ Add Team Member</button>
+          </div>
         </div>
         <div class="field-group">
           <label>Remarks</label>
@@ -1108,11 +1135,19 @@
     <div style="font-size:26px;margin-bottom:7px;">✅</div>
     <h2>Complete Verification</h2>
     <p class="modal-sub">Fill in remaining details to mark this loan as fully verified.</p>
-    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="m_scheme" onchange="SCHEME.handleOther('m_scheme','m_schemeOtherWrap')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="m_schemeOtherWrap"><input type="text" id="m_schemeOtherText" placeholder="Enter scheme name…"></div></div>
+    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="m_scheme" onchange="SCHEME.handleOther('m_scheme','m_schemeOtherWrap');CDS_CHECKER.onSchemeChange('m_scheme','m_cdsCheckerWrap','m_singleCheckerWrap','m_cdsCheckerBadge','m_cdsMembersList')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="m_schemeOtherWrap"><input type="text" id="m_schemeOtherText" placeholder="Enter scheme name…"></div></div>
     <div class="modal-field field-group"><label>Fund</label><select id="m_fund" onchange="SCHEME.handleOther('m_fund','m_fundOtherWrap')"><option value="">— Select fund —</option><option>KSBCDC</option><option>NBCFDC</option><option>NMDFC</option><option>NSKFDC</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="m_fundOtherWrap"><input type="text" id="m_fundOtherText" placeholder="Enter fund name…"></div></div>
     <div class="modal-field field-group"><label>Customer Name</label><input type="text" id="m_name" placeholder="Customer name…"></div>
     <div class="modal-field field-group"><label>Loan Amount</label><input type="number" id="m_amount" placeholder="Loan amount…"></div>
-    <div class="modal-field field-group"><label>Checked By</label><div class="locked-user-display"><span class="lock-icon">🔒</span><span id="m_checkedByName">—</span></div><input type="hidden" id="m_checkedBy"></div>
+    <div class="modal-field field-group" id="m_checkedByGroup">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><label style="margin-bottom:0;">Checked By</label><span id="m_cdsCheckerBadge" class="cds-badge" style="display:none;">👥 CDS — Add Team Members</span></div>
+      <div id="m_singleCheckerWrap"><div class="locked-user-display"><span class="lock-icon">🔒</span><span id="m_checkedByName">—</span></div><input type="hidden" id="m_checkedBy"></div>
+      <div class="cds-checker-wrap" id="m_cdsCheckerWrap">
+<div class="cds-note">👥 CDS — optionally add multiple team members.</div>
+        <div class="cds-members-list" id="m_cdsMembersList"></div>
+        <button class="btn-cds-add" type="button" onclick="CDS_CHECKER.addMember('m_cdsMembersList')">＋ Add Team Member</button>
+      </div>
+    </div>
     <div class="modal-field field-group"><label>Remarks</label><textarea id="m_remarks" placeholder="Remarks…" style="min-height:56px;"></textarea></div>
     <p id="m_msg"></p>
     <div class="modal-btns">
@@ -1128,11 +1163,19 @@
     <div style="font-size:26px;margin-bottom:7px;">✏️</div>
     <h2>Edit Loan Record</h2>
     <p class="modal-sub">Update any details below. <strong>Unlimited edits</strong> are allowed.</p>
-    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="e_scheme" onchange="SCHEME.handleOther('e_scheme','e_schemeOtherWrap')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="e_schemeOtherWrap"><input type="text" id="e_schemeOtherText" placeholder="Enter scheme name…"></div></div>
+    <div class="modal-field field-group"><label>Loan Scheme <span class="req">*</span></label><select id="e_scheme" onchange="SCHEME.handleOther('e_scheme','e_schemeOtherWrap');CDS_CHECKER.onSchemeChange('e_scheme','e_cdsCheckerWrap','e_singleCheckerWrap','e_cdsCheckerBadge','e_cdsMembersList')"><option value="">— Select scheme —</option><option>Micro Credit Loan</option><option>Ente Veedu Loan Scheme</option><option>Education Loan</option><option>Self Employment Return Scheme</option><option>Self Employment Scheme</option><option>CDS</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="e_schemeOtherWrap"><input type="text" id="e_schemeOtherText" placeholder="Enter scheme name…"></div></div>
     <div class="modal-field field-group"><label>Fund</label><select id="e_fund" onchange="SCHEME.handleOther('e_fund','e_fundOtherWrap')"><option value="">— Select fund —</option><option>KSBCDC</option><option>NBCFDC</option><option>NMDFC</option><option>NSKFDC</option><option value="__other__">Other (specify)</option></select><div class="other-specify-wrap" id="e_fundOtherWrap"><input type="text" id="e_fundOtherText" placeholder="Enter fund name…"></div></div>
     <div class="modal-field field-group"><label>Customer Name</label><input type="text" id="e_name" placeholder="Customer name…"></div>
     <div class="modal-field field-group"><label>Loan Amount</label><input type="number" id="e_amount" placeholder="Loan amount…"></div>
-    <div class="modal-field field-group"><label>Checked By <span class="req">*</span></label><select id="e_checkedBy"><option value="">— Select auditor —</option></select></div>
+    <div class="modal-field field-group" id="e_checkedByGroup">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><label style="margin-bottom:0;">Checked By <span class="req">*</span></label><span id="e_cdsCheckerBadge" class="cds-badge" style="display:none;">👥 CDS — Team Required</span></div>
+      <div id="e_singleCheckerWrap"><select id="e_checkedBy"><option value="">— Select auditor —</option></select></div>
+      <div class="cds-checker-wrap" id="e_cdsCheckerWrap">
+<div class="cds-note">👥 CDS — optionally add multiple team members.</div>
+        <div class="cds-members-list" id="e_cdsMembersList"></div>
+        <button class="btn-cds-add" type="button" onclick="CDS_CHECKER.addMember('e_cdsMembersList')">＋ Add Team Member</button>
+      </div>
+    </div>
     <div class="modal-field field-group"><label>Remarks</label><textarea id="e_remarks" placeholder="Remarks…" style="min-height:56px;"></textarea></div>
     <p id="e_msg"></p>
     <div class="modal-btns">
@@ -1451,10 +1494,98 @@
     fundPillClass(f){ if(!f) return'fp-none'; const l=f.toLowerCase(); if(l==='ksbcdc') return'fp-ksbcdc'; if(l==='nbcfdc') return'fp-nbcfdc'; if(l==='nmdfc') return'fp-nmdfc'; if(l==='nskfdc') return'fp-nskfdc'; return'fp-other'; },
 
     // Reset main form scheme+fund
-    resetForm(){ document.getElementById('scheme').value=''; document.getElementById('schemeOtherWrap').style.display='none'; document.getElementById('schemeOtherText').value=''; document.getElementById('fund').value=''; document.getElementById('fundOtherWrap').style.display='none'; document.getElementById('fundOtherText').value=''; }
+    resetForm(){ document.getElementById('scheme').value=''; document.getElementById('schemeOtherWrap').style.display='none'; document.getElementById('schemeOtherText').value=''; document.getElementById('fund').value=''; document.getElementById('fundOtherWrap').style.display='none'; document.getElementById('fundOtherText').value=''; CDS_CHECKER&&CDS_CHECKER.onSchemeChange('scheme','cdsCheckerWrap','singleCheckerWrap','cdsCheckerBadge','cdsMembersList'); }
   };
   window.SCHEME=SCHEME;
+
+  // ── MODULE: CDS MULTI-MEMBER CHECKER ──────────────────
+  const CDS_CHECKER = {
+    isCDS(schemeSelId){ return document.getElementById(schemeSelId)&&document.getElementById(schemeSelId).value==='CDS'; },
+
+    // Show/hide CDS multi-member UI vs single-user display
+    onSchemeChange(schemeSelId, cdsWrapId, singleWrapId, badgeId, listId){
+      const isCds=this.isCDS(schemeSelId);
+      const cdsWrap=document.getElementById(cdsWrapId);
+      const singleWrap=document.getElementById(singleWrapId);
+      const badge=document.getElementById(badgeId);
+      if(cdsWrap) cdsWrap.classList.toggle('visible', isCds);
+      if(singleWrap) singleWrap.style.display=isCds?'none':'';
+      if(badge) badge.style.display=isCds?'inline-flex':'none';
+      // Ensure at least 2 rows when switching to CDS
+      if(isCds && listId){
+        const list=document.getElementById(listId);
+        if(list && list.querySelectorAll('.cds-member-row').length<2){
+          list.innerHTML='';
+          this.addMember(listId);
+          // Pre-fill first member with logged-in user (for main form only)
+          if(listId==='cdsMembersList'){
+            const me=typeof currentUser==='function'?currentUser():'';
+            const firstSel=list.querySelector('.cds-member-select');
+            if(firstSel&&me) firstSel.value=me;
+          }
+        }
+      }
+    },
+
+    // Add a member row to the list
+    addMember(listId){
+      const list=document.getElementById(listId); if(!list) return;
+      const idx=list.querySelectorAll('.cds-member-row').length;
+      const row=document.createElement('div');
+      row.className='cds-member-row';
+      const opts=USERS.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+      row.innerHTML=`<span class="cds-member-num">${idx+1}</span><select class="cds-member-select"><option value="">— Select member —</option>${opts}</select><button class="btn-cds-remove" type="button" onclick="CDS_CHECKER.removeMember(this,'${listId}')" title="Remove">✕</button>`;
+      list.appendChild(row);
+      this._renumber(listId);
+    },
+
+    // Remove a member row (minimum 2 must remain)
+    removeMember(btn, listId){
+      const list=document.getElementById(listId); if(!list) return;
+      const rows=list.querySelectorAll('.cds-member-row');
+      if(rows.length<=1){ btn.closest('.cds-member-row').querySelector('select').value=''; return; }
+      btn.closest('.cds-member-row').remove();
+      this._renumber(listId);
+    },
+
+    // Renumber the index badges
+    _renumber(listId){
+      const list=document.getElementById(listId); if(!list) return;
+      list.querySelectorAll('.cds-member-row').forEach((row,i)=>{
+        const num=row.querySelector('.cds-member-num'); if(num) num.textContent=i+1;
+      });
+    },
+
+    // Get the resolved checkedBy value from a CDS list (comma-joined names)
+    getMembers(listId){
+      const list=document.getElementById(listId); if(!list) return '';
+      const names=[...list.querySelectorAll('.cds-member-select')].map(s=>s.value.trim()).filter(Boolean);
+      return names.join(', ');
+    },
+
+    // Pre-fill CDS members from a stored checkedBy string (comma-separated)
+    setMembers(listId, checkedByStr){
+      const list=document.getElementById(listId); if(!list) return;
+      list.innerHTML='';
+      const names=(checkedByStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+      const toSet=names.length>=2?names:[...names,...Array(2-names.length).fill('')];
+      toSet.forEach(name=>{
+        this.addMember(listId);
+        const rows=list.querySelectorAll('.cds-member-row');
+        const lastSel=rows[rows.length-1].querySelector('select');
+        if(lastSel && name) lastSel.value=name;
+      });
+    },
+
+    // Determine if the current scheme in a given select is CDS, and get checkedBy accordingly
+    resolveCheckedBy(schemeSelId, singleCheckedById, cdsListId){
+      if(this.isCDS(schemeSelId)) return this.getMembers(cdsListId);
+      const el=document.getElementById(singleCheckedById); return el?el.value.trim():'';
+    }
+  };
+  window.CDS_CHECKER=CDS_CHECKER;
   // ──────────────────────────────────────────────────────
+
   const THEME_PREFIX = 'ksbcdc_theme_';
   const CHAT_READ_KEY = 'ksbcdc_chat_last_read';
 
@@ -2053,7 +2184,7 @@
 
   window.markOngoing=async function(){
     const loanNo=document.getElementById('loanNo').value.trim(),
-          checkedBy=document.getElementById('checkedBy').value.trim(),
+          checkedBy=CDS_CHECKER.resolveCheckedBy('scheme','checkedBy','cdsMembersList'),
           scheme=SCHEME.get('scheme','schemeOtherText'),
           fund=SCHEME.get('fund','fundOtherText'),
           name=document.getElementById('name').value.trim(),
@@ -2092,6 +2223,8 @@
     document.getElementById('m_amount').value=od&&od.amount?od.amount:document.getElementById('amount').value;
     document.getElementById('m_remarks').value=od&&od.remarks?od.remarks:document.getElementById('remarks').value;
     document.getElementById('completeModal').style.display='flex';
+    // Trigger CDS UI if scheme is already CDS
+    setTimeout(()=>CDS_CHECKER.onSchemeChange('m_scheme','m_cdsCheckerWrap','m_singleCheckerWrap','m_cdsCheckerBadge','m_cdsMembersList'),0);
   };
   window.closeCompleteModal=function(){document.getElementById('completeModal').style.display='none';completeTargetLoanNo=null;};
   window.confirmComplete=async function(){
@@ -2100,11 +2233,12 @@
           fund=SCHEME.get('m_fund','m_fundOtherText'),
           name=document.getElementById('m_name').value.trim(),
           amount=document.getElementById('m_amount').value.trim(),
-          checkedBy=document.getElementById('m_checkedBy').value.trim(),
+          checkedBy=CDS_CHECKER.resolveCheckedBy('m_scheme','m_checkedBy','m_cdsMembersList'),
           remarks=document.getElementById('m_remarks').value.trim(),
           mMsg=document.getElementById('m_msg');
     if(!scheme){mMsg.textContent='⚠ Please select a Loan Scheme.';return;}
     if(!checkedBy){mMsg.textContent='⚠ Not logged in.';return;}
+
     try{
       await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
       await set(ref(db,'ongoing/'+loanNo),null);
@@ -2121,13 +2255,14 @@
           name=document.getElementById('name').value.trim(),
           loanNo=document.getElementById('loanNo').value.trim(),
           amount=document.getElementById('amount').value.trim(),
-          checkedBy=document.getElementById('checkedBy').value.trim(),
+          checkedBy=CDS_CHECKER.resolveCheckedBy('scheme','checkedBy','cdsMembersList'),
           remarks=document.getElementById('remarks').value.trim(),
           msgEl=document.getElementById('msg');
     msgEl.textContent='';
     if(!loanNo){msgEl.textContent='⚠ Loan Number required.';return;}
     if(!scheme){msgEl.textContent='⚠ Please select a Loan Scheme.';return;}
     if(!checkedBy){msgEl.textContent='⚠ Please log in first.';return;}
+
     if(latestVerified[loanNo]){msgEl.textContent='⚠ Already verified!';return;}
     if(latestOngoing[loanNo]){
       const od=latestOngoing[loanNo];
@@ -2151,7 +2286,18 @@
     }catch(e){msgEl.textContent='Error: '+e.message;}
   };
 
-  window.openEditModal=function(loanNo){ const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;} editTargetLoanNo=loanNo; SCHEME.set('e_scheme','e_schemeOtherWrap','e_schemeOtherText',loan.scheme||''); SCHEME.set('e_fund','e_fundOtherWrap','e_fundOtherText',loan.fund||''); document.getElementById('e_name').value=loan.name||''; document.getElementById('e_amount').value=loan.amount||''; document.getElementById('e_checkedBy').value=loan.checkedBy||''; document.getElementById('e_remarks').value=loan.remarks||''; document.getElementById('e_msg').textContent=''; document.getElementById('editModal').style.display='flex'; };
+  window.openEditModal=function(loanNo){ const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;} editTargetLoanNo=loanNo; SCHEME.set('e_scheme','e_schemeOtherWrap','e_schemeOtherText',loan.scheme||''); SCHEME.set('e_fund','e_fundOtherWrap','e_fundOtherText',loan.fund||''); document.getElementById('e_name').value=loan.name||''; document.getElementById('e_amount').value=loan.amount||''; document.getElementById('e_remarks').value=loan.remarks||''; document.getElementById('e_msg').textContent='';
+    // Handle CDS multi-member or single checker
+    if(loan.scheme==='CDS'){
+      CDS_CHECKER.onSchemeChange('e_scheme','e_cdsCheckerWrap','e_singleCheckerWrap','e_cdsCheckerBadge','e_cdsMembersList');
+      CDS_CHECKER.setMembers('e_cdsMembersList', loan.checkedBy||'');
+    } else {
+      CDS_CHECKER.onSchemeChange('e_scheme','e_cdsCheckerWrap','e_singleCheckerWrap','e_cdsCheckerBadge','e_cdsMembersList');
+      // Populate the single-checker select
+      const eSel=document.getElementById('e_checkedBy');
+      if(eSel){ eSel.innerHTML='<option value="">— Select auditor —</option>'+USERS.map(u=>`<option value="${u.name}">${u.name}</option>`).join(''); eSel.value=loan.checkedBy||''; }
+    }
+    document.getElementById('editModal').style.display='flex'; };
   window.closeEditModal=function(){document.getElementById('editModal').style.display='none';editTargetLoanNo=null;};
 
   window.revertToOngoing=async function(){
@@ -2197,11 +2343,12 @@
           fund=SCHEME.get('e_fund','e_fundOtherText'),
           name=document.getElementById('e_name').value.trim(),
           amount=document.getElementById('e_amount').value.trim(),
-          checkedBy=document.getElementById('e_checkedBy').value.trim(),
+          checkedBy=CDS_CHECKER.resolveCheckedBy('e_scheme','e_checkedBy','e_cdsMembersList'),
           remarks=document.getElementById('e_remarks').value.trim(),
           eMsg=document.getElementById('e_msg');
     if(!scheme){eMsg.textContent='⚠ Loan Scheme required.';return;}
     if(!checkedBy){eMsg.textContent='⚠ Checked By required.';return;}
+
     const existing=latestVerified[loanNo]; if(!existing){eMsg.textContent='⚠ Record not found.';return;}
     try{
       const editCount=(existing.editCount||0)+1,editor=currentUser()||checkedBy,ts=Date.now();
@@ -2326,7 +2473,12 @@
         const isNew=loan.loanNo===justAddedLoanNo,isEdited=loan.loanNo===justEditedLoanNo,isOngoing=loan._status==='ongoing';
         const amtStr=loan.amount?`₹${Number(loan.amount).toLocaleString('en-IN')}`:'—';
         const dateStr=loan.timestamp?formatDate(loan.timestamp):'—';
-        const checkerDisplay=loan.checkedBy||loan.startedBy||'—';
+        const rawChecker=loan.checkedBy||loan.startedBy||'';
+        let checkerDisplay;
+        if(rawChecker&&rawChecker.includes(',')){
+          const chips=rawChecker.split(',').map(n=>n.trim()).filter(Boolean).map(n=>`<span class="cds-member-chip">${n}</span>`).join('');
+          checkerDisplay=`<div class="cds-members-preview">${chips}</div>`;
+        } else { checkerDisplay=rawChecker||'—'; }
         const sc=loan.scheme||'';
         const schemeTd=sc?`<span class="scheme-pill ${schemePillClass(sc)}">${sc}</span>`:`<span style="color:var(--text-light);font-size:11.5px;font-style:italic;">—</span>`;
         const fc=loan.fund||'';
