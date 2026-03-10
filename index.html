@@ -753,6 +753,37 @@
     @media(max-width:960px){.two-col{grid-template-columns:1fr;}.stats-row{grid-template-columns:1fr 1fr;}.form-card{position:static;}}
     @media(max-width:520px){.stats-row{grid-template-columns:1fr;}.topnav{padding:0 12px;}.login-grid{grid-template-columns:1fr 1fr;}.fab-label{display:none;}.fab-chat{bottom:14px;right:14px;}.theme-grid{grid-template-columns:repeat(2,1fr);}.ls-row{gap:18px;}.dh-grid{gap:5px;}.dh-day-cell{min-width:50px;}}
 
+    /* ── PENDING LOANS TAB ── */
+    .pending-loans-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;animation:fadeUp 0.5s 0.15s ease both;transition:background var(--transition),border-color var(--transition);}
+    .pending-loans-header{padding:14px 18px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none;transition:background 0.15s;}
+    .pending-loans-header:hover{background:var(--surface3);}
+    .pending-loans-header-left{display:flex;align-items:center;gap:10px;}
+    .pending-loans-title{font-size:13px;font-weight:700;color:var(--text);}
+    .pending-loans-count-badge{background:var(--primary);color:white;font-size:11px;font-weight:700;padding:2px 10px;border-radius:100px;font-family:var(--font-mono);min-width:28px;text-align:center;}
+    .pending-loans-count-badge.all-done{background:var(--accent);}
+    .pending-done-badge{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;}
+    .pending-chevron{font-size:12px;color:var(--text-muted);transition:transform 0.25s;}
+    .pending-chevron.open{transform:rotate(180deg);}
+    .pending-loans-body{padding:16px 18px;display:none;}
+    .pending-loans-body.open{display:block;}
+    .pending-stats-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+    .pl-stat{flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;text-align:center;}
+    .pl-stat-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--stat-val-color);}
+    .pl-stat-label{font-size:9.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;font-weight:600;}
+    .pl-stat-val.done{color:var(--accent);}
+    .pending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;}
+    .pl-chip{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--primary);transition:all 0.18s;cursor:default;}
+    .pl-chip.done{border-color:var(--accent);background:var(--accent-light);color:var(--accent);text-decoration:line-through;opacity:0.7;}
+    .pl-chip.ongoing{border-color:var(--warn-border);background:var(--warn-light);color:var(--warn);}
+    .pl-chip-icon{font-size:11px;flex-shrink:0;}
+    .pl-empty{text-align:center;padding:20px;color:var(--text-light);font-size:12.5px;}
+    .pl-progress-wrap{margin-bottom:14px;}
+    .pl-progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:5px;font-weight:600;}
+    .pl-progress-bar{height:8px;background:var(--surface3);border-radius:100px;overflow:hidden;}
+    .pl-progress-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+    .pl-warning-toast{display:none;background:var(--warn-light);border:1.5px solid var(--warn-border);color:var(--warn);border-radius:var(--radius-sm);padding:9px 13px;font-size:12px;font-weight:600;margin-bottom:10px;animation:popIn 0.25s ease;}
+    .pl-warning-toast.show{display:flex;align-items:center;gap:8px;}
+
     /* ── CDS MULTI-MEMBER CHECKER ── */
     .cds-checker-wrap{display:none;flex-direction:column;gap:8px;}
     .cds-checker-wrap.visible{display:flex;}
@@ -1181,6 +1212,37 @@
     <div class="dh-footer">
       <div class="dh-footer-stat" id="dhFooterStats">—</div>
       <button class="dh-show-more" id="dhShowMore" onclick="toggleDhShowAll()" style="display:none;">Show all days</button>
+    </div>
+  </div>
+
+  <!-- PENDING LOANS PANEL -->
+  <div class="pending-loans-card" id="pendingLoansCard">
+    <div class="pending-loans-header" onclick="togglePendingLoans()">
+      <div class="pending-loans-header-left">
+        <span style="font-size:17px;">📋</span>
+        <span class="pending-loans-title">Pending Loans to Verify (Started from March 10)</span>
+        <span class="pending-loans-count-badge" id="plBadge">0</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="plDoneBadge" class="pending-done-badge" style="display:none;">✅ All Done!</span>
+        <span class="pending-chevron" id="plChevron">▼</span>
+      </div>
+    </div>
+    <div class="pending-loans-body" id="pendingLoansBody">
+      <div class="pl-warning-toast" id="plWarningToast"><span>⚠️</span><span id="plWarningMsg"></span></div>
+      <div class="pending-stats-row">
+        <div class="pl-stat"><div class="pl-stat-val" id="plStatTotal">0</div><div class="pl-stat-label">Total</div></div>
+        <div class="pl-stat"><div class="pl-stat-val done" id="plStatDone">0</div><div class="pl-stat-label">Verified</div></div>
+        <div class="pl-stat"><div class="pl-stat-val" style="color:var(--warn);" id="plStatOngoing">0</div><div class="pl-stat-label">Ongoing</div></div>
+        <div class="pl-stat"><div class="pl-stat-val" style="color:var(--danger);" id="plStatRemaining">0</div><div class="pl-stat-label">Remaining</div></div>
+      </div>
+      <div class="pl-progress-wrap">
+        <div class="pl-progress-label"><span>Progress</span><span id="plProgressPct">0%</span></div>
+        <div class="pl-progress-bar"><div class="pl-progress-fill" id="plProgressFill" style="width:0%"></div></div>
+      </div>
+      <div class="pending-grid" id="pendingGrid">
+        <div class="pl-empty">Loading…</div>
+      </div>
     </div>
   </div>
 
@@ -3355,6 +3417,174 @@
       });
     }
   }
+  // ════════════════════════════════════════════════════
+
+  // ════════════════════════════════════════════════════
+  // ── PENDING LOANS MODULE ─────────────────────────────
+  // ════════════════════════════════════════════════════
+
+  const PENDING_LOAN_NUMBERS = [
+    110122376, 110122380, 110122387, 110122406, 110122407,
+    110122420, 110122426, 110122431, 110122452, 110122470,
+    110122471, 110122487, 110122488, 110122489, 110122490,
+    110122491, 110122492, 110122493, 110122494, 110122641,
+    110122642, 110122677, 110122678, 110122751, 110122829,
+    110122830, 110122831, 110122832, 110122924, 110122925,
+    110122926, 110122927, 110122928, 110122929, 110122930,
+    110122931, 110122932, 110123155, 110123327, 110123329,
+    110123330, 110123331, 110123332, 110123457, 110123318,
+    110120370, 110120062
+  ].map(String);
+
+  // Check if a loan number is in the pending list (for both primary and additional loan numbers)
+  window.isPendingLoan = function(loanNo) {
+    return PENDING_LOAN_NUMBERS.includes(String(loanNo).trim());
+  };
+
+  // Render the pending loans panel
+  function renderPendingLoans() {
+    const grid = document.getElementById('pendingGrid');
+    const badge = document.getElementById('plBadge');
+    const doneBadge = document.getElementById('plDoneBadge');
+    if (!grid) return;
+
+    const total = PENDING_LOAN_NUMBERS.length;
+    let doneCount = 0, ongoingCount = 0;
+
+    const items = PENDING_LOAN_NUMBERS.map(ln => {
+      const isVerified = !!(latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln)));
+      const isOngoing = !isVerified && !!(latestOngoing[ln]);
+      if (isVerified) doneCount++;
+      else if (isOngoing) ongoingCount++;
+      return { ln, isVerified, isOngoing };
+    });
+
+    const remaining = total - doneCount;
+    const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+    // Update stats
+    document.getElementById('plStatTotal').textContent = total;
+    document.getElementById('plStatDone').textContent = doneCount;
+    document.getElementById('plStatOngoing').textContent = ongoingCount;
+    document.getElementById('plStatRemaining').textContent = remaining;
+    document.getElementById('plProgressFill').style.width = pct + '%';
+    document.getElementById('plProgressPct').textContent = pct + '%';
+
+    // Badge
+    badge.textContent = remaining;
+    badge.classList.toggle('all-done', remaining === 0);
+    doneBadge.style.display = remaining === 0 ? 'inline-flex' : 'none';
+
+    // Grid
+    grid.innerHTML = items.map(({ ln, isVerified, isOngoing }) => {
+      let cls = 'pl-chip';
+      let icon = '🔵';
+      if (isVerified) { cls += ' done'; icon = '✅'; }
+      else if (isOngoing) { cls += ' ongoing'; icon = '⏳'; }
+      return `<div class="${cls}" title="Loan #${ln}${isVerified?' — Verified':isOngoing?' — Ongoing':' — Pending'}">
+        <span>${ln}</span><span class="pl-chip-icon">${icon}</span>
+      </div>`;
+    }).join('');
+  }
+
+  window.togglePendingLoans = function() {
+    const body = document.getElementById('pendingLoansBody');
+    const chevron = document.getElementById('plChevron');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+    if (!isOpen) renderPendingLoans();
+  };
+
+  // Show warning toast in pending panel
+  function showPendingWarning(loanNo, reason) {
+    const toast = document.getElementById('plWarningToast');
+    const msg = document.getElementById('plWarningMsg');
+    if (!toast || !msg) return;
+    msg.textContent = `Loan #${loanNo} is not in the pending list. ${reason || ''}`;
+    toast.classList.add('show');
+    clearTimeout(window._plWarnTimer);
+    window._plWarnTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+  }
+
+  // Override checkLoanStatus to also warn about pending list
+  const _origCheckLoanStatus = window.checkLoanStatus;
+  window.checkLoanStatus = function() {
+    _origCheckLoanStatus && _origCheckLoanStatus();
+    clearTimeout(window._plCheckTimer);
+    const loanNo = (document.getElementById('loanNo') || {}).value;
+    if (!loanNo || !loanNo.trim()) return;
+    window._plCheckTimer = setTimeout(() => {
+      const ln = loanNo.trim();
+      if (ln && !isPendingLoan(ln)) {
+        showPendingWarning(ln, 'Please verify it is the correct loan number.');
+        // Also open panel to show context
+        const body = document.getElementById('pendingLoansBody');
+        if (body && !body.classList.contains('open')) {
+          document.getElementById('pendingLoansBody').classList.add('open');
+          document.getElementById('plChevron').classList.add('open');
+          renderPendingLoans();
+        }
+      } else {
+        const toast = document.getElementById('plWarningToast');
+        if (toast) toast.classList.remove('show');
+      }
+    }, 350);
+  };
+
+  // Patch CDS_LOANS.checkDuplicate to also check pending list for additional loan numbers
+  const _origCDSCheckDup = CDS_LOANS.checkDuplicate.bind(CDS_LOANS);
+  CDS_LOANS.checkDuplicate = function(input, loanNo, listId, uid) {
+    _origCDSCheckDup(input, loanNo, listId, uid);
+    // Add pending list warning after a brief delay (let original run first)
+    setTimeout(() => {
+      if (!loanNo || !loanNo.trim()) return;
+      if (!isPendingLoan(loanNo.trim())) {
+        const statusEl = document.getElementById('status_' + uid);
+        const existing = statusEl ? statusEl.textContent : '';
+        // Only override if no error/dup status already shown
+        if (existing === '✓ OK' || existing === '') {
+          if (statusEl) {
+            statusEl.textContent = '⚠ Not in list';
+            statusEl.style.color = 'var(--warn)';
+          }
+          input.classList.remove('status-ok','status-warn','status-error');
+          input.classList.add('status-warn');
+          this._applyStatusStyle(input);
+        }
+      }
+    }, 60);
+  };
+
+  // Refresh pending panel whenever data changes
+  const _origMergeAndRefresh = window.mergeAndRefresh;
+  if (typeof mergeAndRefresh === 'function') {
+    window.mergeAndRefresh = function() {
+      _origMergeAndRefresh && _origMergeAndRefresh();
+      const body = document.getElementById('pendingLoansBody');
+      if (body && body.classList.contains('open')) renderPendingLoans();
+      // Always update badge count
+      const total = PENDING_LOAN_NUMBERS.length;
+      let doneCount = 0;
+      PENDING_LOAN_NUMBERS.forEach(ln => {
+        if (latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln))) doneCount++;
+      });
+      const badge = document.getElementById('plBadge');
+      if (badge) { badge.textContent = total - doneCount; badge.classList.toggle('all-done', doneCount === total); }
+    };
+  }
+
+  // Initial badge update after data loads
+  setTimeout(() => {
+    const total = PENDING_LOAN_NUMBERS.length;
+    let doneCount = 0;
+    PENDING_LOAN_NUMBERS.forEach(ln => {
+      if (latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln))) doneCount++;
+    });
+    const badge = document.getElementById('plBadge');
+    if (badge) { badge.textContent = total - doneCount; badge.classList.toggle('all-done', doneCount === total); }
+  }, 3500);
+
   // ════════════════════════════════════════════════════
 
 </script>
