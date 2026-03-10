@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KSBCDC Internal Audit — v3.4</title>
+  <title>KSBCDC Internal Audit — v3.5</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -792,6 +792,115 @@
     .btn-cds-add-loan{display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--surface2);color:var(--text-muted);border:1.5px dashed var(--border2);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;}
     .btn-cds-add-loan:hover{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe;border-style:solid;}
     .cds-extra-info{font-size:10px;color:var(--text-light);display:flex;align-items:center;gap:4px;}
+
+    /* ── NOTIFICATIONS ── */
+    .notif-dot{position:absolute;top:-4px;right:-4px;width:17px;height:17px;background:#ef4444;border-radius:50%;font-size:9px;font-weight:700;color:white;display:none;align-items:center;justify-content:center;border:2px solid var(--nav-bg);}
+    .notif-dot.show{display:flex;}
+    #notifPanel{position:fixed;top:68px;right:16px;width:360px;max-height:560px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:9000;display:none;flex-direction:column;overflow:hidden;animation:popIn 0.22s cubic-bezier(0.34,1.4,0.64,1);}
+    #notifPanel.open{display:flex;}
+    .notif-head{padding:13px 16px 10px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+    .notif-head-left{display:flex;align-items:center;gap:8px;}
+    .notif-head-title{font-size:13px;font-weight:700;color:var(--text);}
+    .notif-head-count{font-size:10px;font-weight:700;color:var(--primary);background:var(--primary-glow);padding:1px 7px;border-radius:100px;border:1px solid var(--border);}
+    .notif-head-actions{display:flex;align-items:center;gap:6px;}
+    .notif-mark-all{font-size:10.5px;font-weight:700;color:var(--accent);cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface);transition:all 0.15s;}
+    .notif-mark-all:hover{background:var(--accent);color:white;border-color:var(--accent);}
+    .notif-close-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .notif-close-btn:hover{background:var(--danger);color:white;border-color:var(--danger);}
+    .notif-item-del{position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-light);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all 0.13s;line-height:1;}
+    .notif-item:hover .notif-item-del{display:flex;}
+    .notif-item-del:hover{background:var(--danger);color:white;border-color:var(--danger);}
+    .btn-clear-notifs{font-size:10.5px;font-weight:700;color:var(--danger);cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface);transition:all 0.15s;}
+    .btn-clear-notifs:hover{background:var(--danger);color:white;border-color:var(--danger);}
+
+    /* ── BROADCAST POPUP ── */
+    #broadcastOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999999;pointer-events:none;}
+    #broadcastOverlay.show{display:flex;}
+    .bc-popup{pointer-events:auto;min-width:280px;max-width:420px;width:90%;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,0.4),0 0 0 1px rgba(255,255,255,0.07);overflow:hidden;animation:bcIn 0.45s cubic-bezier(0.34,1.45,0.64,1) both;}
+    @keyframes bcIn{from{opacity:0;transform:scale(0.82) translateY(30px);}to{opacity:1;transform:scale(1) translateY(0);}}
+    .bc-popup.type-info{background:linear-gradient(135deg,#0f3460,#1a5276);border:1px solid #2e86c1;}
+    .bc-popup.type-success{background:linear-gradient(135deg,#0a3d2e,#1a6b4a);border:1px solid #1e8449;}
+    .bc-popup.type-warn{background:linear-gradient(135deg,#4a2800,#7d4800);border:1px solid #e67e22;}
+    .bc-popup.type-danger{background:linear-gradient(135deg,#4a0000,#7d0000);border:1px solid #e74c3c;}
+    .bc-popup.type-announce{background:linear-gradient(135deg,#1a0050,#3d0080);border:1px solid #8e44ad;}
+    .bc-top-bar{height:4px;width:100%;}
+    .type-info .bc-top-bar{background:linear-gradient(90deg,#2e86c1,#85c1e9);}
+    .type-success .bc-top-bar{background:linear-gradient(90deg,#1e8449,#52be80);}
+    .type-warn .bc-top-bar{background:linear-gradient(90deg,#e67e22,#f8c471);}
+    .type-danger .bc-top-bar{background:linear-gradient(90deg,#e74c3c,#f1948a);}
+    .type-announce .bc-top-bar{background:linear-gradient(90deg,#8e44ad,#c39bd3);}
+    .bc-inner{padding:22px 24px 20px;display:flex;gap:14px;align-items:flex-start;}
+    .bc-icon{font-size:28px;line-height:1;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));}
+    .bc-body{flex:1;min-width:0;}
+    .bc-from{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:5px;}
+    .bc-title{font-size:16px;font-weight:800;color:white;line-height:1.25;margin-bottom:6px;word-break:break-word;}
+    .bc-msg{font-size:12.5px;color:rgba(255,255,255,0.8);line-height:1.55;word-break:break-word;}
+    .bc-footer{padding:10px 24px 16px;display:flex;align-items:center;justify-content:space-between;}
+    .bc-timer-bar-wrap{flex:1;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin-right:14px;overflow:hidden;}
+    .bc-timer-bar{height:100%;background:rgba(255,255,255,0.6);border-radius:2px;transition:width linear;}
+    .bc-dismiss{font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.55);cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.08);transition:all 0.15s;white-space:nowrap;}
+    .bc-dismiss:hover{background:rgba(255,255,255,0.18);color:white;}
+
+    /* ── ADMIN BROADCAST TAB ── */
+    .bc-admin-wrap{padding:18px;}
+    .bc-admin-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#7fa8c8;margin-bottom:14px;}
+    .bc-field{margin-bottom:11px;}
+    .bc-label{font-size:10.5px;font-weight:700;color:#7fa8c8;margin-bottom:5px;display:block;}
+    .bc-input,.bc-textarea,.bc-select{width:100%;padding:9px 12px;font-family:var(--font-body);font-size:12.5px;background:#0d1f35;border:1.5px solid #1e3a5f;border-radius:8px;color:#e8f0f8;outline:none;box-sizing:border-box;transition:border-color 0.15s;}
+    .bc-input:focus,.bc-textarea:focus,.bc-select:focus{border-color:#4a9fd4;}
+    .bc-textarea{resize:vertical;min-height:60px;}
+    .bc-row{display:flex;gap:10px;}
+    .bc-row .bc-field{flex:1;}
+    .bc-preview-btn{width:100%;padding:9px;background:#1a3a5c;color:#7ec8f0;border:1.5px solid #2a5a8c;border-radius:8px;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:all 0.15s;}
+    .bc-preview-btn:hover{background:#2a5a8c;color:white;}
+    .bc-send-btn{width:100%;padding:10px;background:linear-gradient(135deg,#e67e22,#f39c12);color:white;border:none;border-radius:8px;font-family:var(--font-body);font-size:13px;font-weight:800;cursor:pointer;transition:opacity 0.15s;letter-spacing:0.5px;}
+    .bc-send-btn:hover{opacity:0.88;}
+    .bc-send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .bc-admin-msg{font-size:11px;margin-top:8px;min-height:15px;color:#4ade80;}
+    .bc-type-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+    .bc-type-opt{padding:7px 4px;border-radius:7px;border:1.5px solid #1e3a5f;background:#0d1f35;color:#7fa8c8;font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s;}
+    .bc-type-opt:hover{border-color:#4a9fd4;color:#e8f0f8;}
+    .bc-type-opt.selected{border-color:#e67e22;background:#2a1500;color:#f39c12;}
+    .bc-scheduled-list{margin-top:10px;max-height:120px;overflow-y:auto;}
+    .bc-sched-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:#0d1f35;border:1px solid #1e3a5f;border-radius:6px;margin-bottom:5px;font-size:10.5px;color:#7fa8c8;}
+    .bc-sched-cancel{font-size:9px;color:#e74c3c;cursor:pointer;padding:2px 6px;border:1px solid #e74c3c;border-radius:4px;}
+    .bc-sched-cancel:hover{background:#e74c3c;color:white;}
+    .notif-list{overflow-y:auto;flex:1;}
+    .notif-list::-webkit-scrollbar{width:4px;}
+    .notif-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+    .notif-item{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.13s;position:relative;}
+    .notif-item:hover{background:var(--primary-glow);}
+    .notif-item.unread{background:var(--surface2);}
+    .notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 2px 2px 0;}
+    .notif-item.warn::before{background:var(--warn);}
+    .notif-item.danger::before{background:var(--danger);}
+    .notif-item.success::before{background:var(--accent);}
+    .notif-icon-wrap{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .notif-icon-wrap.info{background:var(--primary-glow);}
+    .notif-icon-wrap.warn{background:var(--warn-light);}
+    .notif-icon-wrap.danger{background:var(--danger-light);}
+    .notif-icon-wrap.success{background:var(--accent-light);}
+    .notif-icon-wrap.edit{background:var(--edit-light);}
+    .notif-icon-wrap.system{background:var(--surface3);}
+    .notif-body{flex:1;min-width:0;}
+    .notif-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3;}
+    .notif-msg{font-size:11px;color:var(--text-muted);line-height:1.45;}
+    .notif-time{font-family:var(--font-mono);font-size:9.5px;color:var(--text-light);margin-top:4px;}
+    .notif-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:9px;color:var(--text-light);}
+    .notif-empty-icon{font-size:28px;opacity:0.4;}
+    .notif-empty-text{font-size:12px;}
+    .notif-footer{padding:9px 14px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0;}
+    /* Admin compose */
+    .notif-compose{padding:12px 14px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0;display:none;}
+    .notif-compose-title{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+    .notif-compose-row{display:flex;gap:6px;margin-bottom:6px;}
+    .notif-compose-select{flex:1;padding:7px 10px;font-family:var(--font-body);font-size:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;}
+    .notif-compose-select:focus{border-color:var(--primary-light);}
+    .notif-compose-input{width:100%;padding:7px 10px;font-family:var(--font-body);font-size:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;margin-bottom:6px;}
+    .notif-compose-input:focus{border-color:var(--primary-light);}
+    .btn-notif-send{width:100%;padding:8px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.15s;}
+    .btn-notif-send:hover{opacity:0.85;}
+    .notif-section-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);padding:7px 14px 3px;background:var(--surface3);border-bottom:1px solid var(--border);}
   </style>
 </head>
 <body>
@@ -819,7 +928,7 @@
   <div class="login-brand">
     <div class="login-brand-icon">🏦</div>
     <div class="login-brand-title">KSBCDC Internal Audit</div>
-    <div class="login-brand-sub">Loan Document Verification System — v3.4</div>
+    <div class="login-brand-sub">Loan Document Verification System — v3.5</div>
   </div>
   <div class="login-card">
     <div class="login-heading">Who are you?</div>
@@ -903,6 +1012,7 @@
       <div class="admin-tab" onclick="switchAdminTab('editlog',this)">✏️ Edit Log</div>
       <div class="admin-tab" onclick="switchAdminTab('deletelog',this)">🗑️ Delete Log</div>
       <div class="admin-tab" onclick="switchAdminTab('users',this)">👥 Manage Users</div>
+      <div class="admin-tab" onclick="switchAdminTab('broadcast',this)">📢 Broadcast</div>
     </div>
     <div class="admin-body">
       <div class="admin-section active" id="adminTabLogs"><div id="loginLogContainer"><div class="log-empty">Loading…</div></div></div>
@@ -944,6 +1054,50 @@
           <div id="adminMsg"></div>
         </div>
       </div>
+      <div class="admin-section" id="adminTabBroadcast">
+        <div class="bc-admin-wrap">
+          <div class="bc-admin-title">📢 Popup Broadcast Message</div>
+          <div class="bc-field">
+            <label class="bc-label">Type</label>
+            <div class="bc-type-grid" id="bcTypeGrid">
+              <div class="bc-type-opt selected" data-type="info" onclick="selectBcType(this)">ℹ️ Info</div>
+              <div class="bc-type-opt" data-type="success" onclick="selectBcType(this)">✅ Success</div>
+              <div class="bc-type-opt" data-type="warn" onclick="selectBcType(this)">⚠️ Warning</div>
+              <div class="bc-type-opt" data-type="danger" onclick="selectBcType(this)">🚨 Alert</div>
+              <div class="bc-type-opt" data-type="announce" onclick="selectBcType(this)">📣 Announce</div>
+            </div>
+          </div>
+          <div class="bc-field">
+            <label class="bc-label">Title</label>
+            <input class="bc-input" id="bcTitle" placeholder="e.g. System Maintenance" maxlength="80">
+          </div>
+          <div class="bc-field">
+            <label class="bc-label">Message</label>
+            <textarea class="bc-textarea" id="bcMsg" placeholder="Write your message…" maxlength="300"></textarea>
+          </div>
+          <div class="bc-row">
+            <div class="bc-field">
+              <label class="bc-label">Delay (seconds)</label>
+              <input class="bc-input" id="bcDelay" type="number" value="0" min="0" max="300" placeholder="0">
+            </div>
+
+          </div>
+          <div class="bc-field">
+            <label class="bc-label">Target</label>
+            <select class="bc-select" id="bcTarget">
+              <option value="all">Everyone</option>
+            </select>
+          </div>
+          <div class="bc-field">
+            <label class="bc-label">From (shown in popup)</label>
+            <input class="bc-input" id="bcFrom" placeholder="e.g. Admin, KSBCDC Management…" maxlength="50">
+          </div>
+          <button class="bc-preview-btn" onclick="previewBroadcast()">👁 Preview</button>
+          <button class="bc-send-btn" id="bcSendBtn" onclick="sendBroadcast()">📢 Send Broadcast</button>
+          <div class="bc-admin-msg" id="bcAdminMsg"></div>
+          <div id="bcScheduledList" class="bc-scheduled-list"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -959,7 +1113,7 @@
   </div>
   <div class="nav-right">
     <div class="nav-time" id="liveClock"></div>
-    <div class="nav-version">v3.4</div>
+    <div class="nav-version">v3.5</div>
     <div class="nav-badge" id="statusBadge">LIVE</div>
     <div class="nav-icon-btn" id="navThemeBtn" onclick="openThemeModal()" title="Change theme" style="display:none;">🎨</div>
     <div class="nav-icon-btn" id="navInfoBtn" onclick="openAppInfoModal()" title="App Info & Updates" style="display:none;">
@@ -968,6 +1122,10 @@
     <div class="nav-icon-btn" id="navChatBtn" onclick="openChatModal()" title="Team Chat" style="display:none;">
       💬
       <div class="nav-chat-badge" id="navChatBadge"></div>
+    </div>
+    <div class="nav-icon-btn" id="navNotifBtn" onclick="toggleNotifPanel()" title="Notifications" style="display:none;position:relative;">
+      🔔
+      <div class="notif-dot" id="notifDot"></div>
     </div>
     <div class="nav-user-pill" id="navUserPill" onclick="showLoginScreen()" title="Switch user" style="display:none;">
       <div class="nav-user-av" id="navUserAv"></div>
@@ -1149,7 +1307,7 @@
       </div>
     </div>
   </div>
-  <div class="footer">Prepared by: <strong>Nihal Shalu</strong> &nbsp;·&nbsp; KSBCDC Internal Audit System &nbsp;·&nbsp; <strong>Version 3.3</strong></div>
+  <div class="footer">Prepared by: <strong>Nihal Shalu</strong> &nbsp;·&nbsp; KSBCDC Internal Audit System &nbsp;·&nbsp; <strong>Version 3.5</strong></div>
 </div>
 
 <!-- SUCCESS/ONGOING/EDIT POPUPS -->
@@ -1308,9 +1466,26 @@
         <div class="wj-entry current">
           <div class="wj-dot"></div>
           <div class="wj-head">
+            <span class="wj-version">v3.5</span>
+            <span class="wj-vname">Notifications & CDS Groups</span>
+            <span class="wj-current-badge">CURRENT</span>
+            <span class="wj-date"></span>
+          </div>
+          <div class="wj-changes">
+            <div class="wj-change"><div class="wj-change-dot"></div>In-app notification system — bell icon in nav bar</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>Edit attempt & edit confirmed alerts to original submitter</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>CDS team member alerts — notified when added as checker</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>Loan verified, deleted & reverted notifications to all</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>Admin can send personal or group notifications</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>CDS additional loan numbers — separate Firebase records, grouped display</div>
+            <div class="wj-change"><div class="wj-change-dot"></div>Version update notification broadcast on login</div>
+          </div>
+        </div>
+        <div class="wj-entry">
+          <div class="wj-dot"></div>
+          <div class="wj-head">
             <span class="wj-version">v3.4</span>
             <span class="wj-vname">Daily Insights & Status</span>
-            <span class="wj-current-badge">CURRENT</span>
             <span class="wj-date"></span>
           </div>
           <div class="wj-changes">
@@ -1836,6 +2011,7 @@
     document.getElementById('navUserPill').style.display='flex';
     document.getElementById('navThemeBtn').style.display='flex'; document.getElementById('navInfoBtn').style.display='flex';
     document.getElementById('navChatBtn').style.display='flex';
+    document.getElementById('navNotifBtn').style.display='flex';
     document.getElementById('fabChat').style.display='flex';
     const u=USERS.find(x=>x.name===name)||{color:'#64748b',role:'Auditor'};
     document.getElementById('navUserAv').textContent=getInitials(name);
@@ -1848,6 +2024,9 @@
     push(ref(db,'loginLogs'),{user:name,timestamp:Date.now()});
     showUserWelcome(name,u);
     updateChatUnread();
+    startNotifListener();
+    startBroadcastListener();
+    setTimeout(()=>sendVersionNotif(), 3000);
   }
 
   function showUserWelcome(name,u){
@@ -1871,7 +2050,7 @@
   document.getElementById('userWelcomeModal').addEventListener('click',function(e){ if(e.target===this) closeUserWelcome(); });
 
   window.loginAs=function(name){ localStorage.setItem(USER_KEY,name); const ls=document.getElementById('loginScreen'); ls.style.opacity='0'; ls.style.transition='opacity 0.35s'; setTimeout(()=>{ applyUserSession(name); ls.style.opacity=''; ls.style.transition=''; },350); };
-  window.showLoginScreen=function(){ localStorage.removeItem(USER_KEY); document.documentElement.removeAttribute('data-theme'); document.getElementById('loginScreen').classList.remove('hidden','waiting'); ['navUserPill','navThemeBtn','navChatBtn'].forEach(id=>document.getElementById(id).style.display='none'); document.getElementById('fabChat').style.display='none'; };
+  window.showLoginScreen=function(){ localStorage.removeItem(USER_KEY); document.documentElement.removeAttribute('data-theme'); document.getElementById('loginScreen').classList.remove('hidden','waiting'); ['navUserPill','navThemeBtn','navChatBtn','navNotifBtn','navInfoBtn'].forEach(id=>document.getElementById(id).style.display='none'); document.getElementById('fabChat').style.display='none'; allNotifs=[]; if(typeof closeNotifPanel==='function') closeNotifPanel(); };
 
   // ── LOADING ──
   function checkAllLoaded(){
@@ -2036,6 +2215,18 @@
   function openAdminPanel(){ document.getElementById('adminModal').style.display='flex'; loadLoginLogs(); renderUserList(); }
   window.closeAdminPanel=function(){ document.getElementById('adminModal').style.display='none'; };
   document.getElementById('adminModal').addEventListener('click',function(e){ if(e.target===this) closeAdminPanel(); });
+
+  // Keyboard shortcut: Ctrl+Shift+A — opens admin panel directly for Muhammed Nihal only
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey&&e.shiftKey&&e.key==='A'){
+      if(currentUser()===ADMIN_USER){
+        e.preventDefault();
+        const modal=document.getElementById('adminModal');
+        if(modal.style.display==='flex') closeAdminPanel();
+        else openAdminPanel();
+      }
+    }
+  });
   window.switchAdminTab=function(tab,el){
     document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
@@ -2044,6 +2235,7 @@
     if(tab==='logs') loadLoginLogs();
     else if(tab==='editlog') renderEditLog();
     else if(tab==='deletelog') renderDeleteLog();
+    else if(tab==='broadcast') setTimeout(initBroadcastTab, 0);
     else renderUserList();
   };
   window.deleteAllEditLogs=function(){ if(!confirm('Delete ALL edit logs?')) return; set(ref(db,'editLogs'),null).then(()=>{ allEditLogs=[]; renderEditLog(); }); };
@@ -2419,6 +2611,8 @@
       await set(ref(db,'ongoing/'+loanNo),null);
       justAddedLoanNo=loanNo; closeCompleteModal();
       document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
+      notifyVerified([loanNo], checkedBy);
+      notifyCDSMembers(loanNo, checkedBy, currentUser());
       if(document.getElementById('loanNo').value.trim()===loanNo){ ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value=''); SCHEME.resetForm(); checkLoanStatus(); }
     }catch(e){mMsg.textContent='Error: '+e.message;}
   };
@@ -2463,6 +2657,8 @@
         }
         justAddedLoanNo=loanNo;
         document.getElementById('popupLoanNo').textContent=`Loan # ${allNos.join(', ')}`; showPopup('successPopup',2800);
+        notifyVerified(allNos, checkedBy);
+        notifyCDSMembers(loanNo, checkedBy, currentUser());
         ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
         SCHEME.resetForm(); CDS_LOANS.clearLoans('mainExtraLoanList'); checkLoanStatus();
       }catch(e){msgEl.textContent='Error: '+e.message;}
@@ -2476,12 +2672,28 @@
       }
       justAddedLoanNo=loanNo;
       document.getElementById('popupLoanNo').textContent=`Loan # ${allNos.join(', ')}`; showPopup('successPopup',2800);
+      notifyVerified(allNos, checkedBy);
+      notifyCDSMembers(loanNo, checkedBy, currentUser());
       ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
       SCHEME.resetForm(); CDS_LOANS.clearLoans('mainExtraLoanList'); checkLoanStatus();
     }catch(e){msgEl.textContent='Error: '+e.message;}
   };
 
-  window.openEditModal=function(loanNo){ const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;} editTargetLoanNo=loanNo; SCHEME.set('e_scheme','e_schemeOtherWrap','e_schemeOtherText',loan.scheme||''); SCHEME.set('e_fund','e_fundOtherWrap','e_fundOtherText',loan.fund||''); document.getElementById('e_name').value=loan.name||''; document.getElementById('e_amount').value=loan.amount||''; document.getElementById('e_remarks').value=loan.remarks||''; document.getElementById('e_msg').textContent='';
+  window.openEditModal=function(loanNo){
+    const loan=latestVerified[loanNo]; if(!loan){alert('Record not found.');return;}
+    editTargetLoanNo=loanNo;
+    // Notify original submitter(s) if a different user is opening this for edit
+    const _editor=currentUser();
+    if(_editor && loan.checkedBy){
+      const _owners=loan.checkedBy.split(',').map(s=>s.trim()).filter(Boolean);
+      if(!_owners.includes(_editor)) notifyEditAttempt(loanNo, loan.checkedBy, _editor);
+    }
+    SCHEME.set('e_scheme','e_schemeOtherWrap','e_schemeOtherText',loan.scheme||'');
+    SCHEME.set('e_fund','e_fundOtherWrap','e_fundOtherText',loan.fund||'');
+    document.getElementById('e_name').value=loan.name||'';
+    document.getElementById('e_amount').value=loan.amount||'';
+    document.getElementById('e_remarks').value=loan.remarks||'';
+    document.getElementById('e_msg').textContent='';
     // Handle CDS multi-member or single checker
     if(loan.scheme==='CDS'){
       CDS_CHECKER.onSchemeChange('e_scheme','e_cdsCheckerWrap','e_singleCheckerWrap','e_cdsCheckerBadge','e_cdsMembersList');
@@ -2591,6 +2803,7 @@
       });
       if(status==='ongoing') await set(ref(db,'ongoing/'+loanNo),null);
       else await set(ref(db,'loans/'+loanNo),null);
+      notifyDeleted(loanNo, currentUser()||'Admin');
       document.getElementById('popupDeleteLoanNo').textContent=`Loan # ${loanNo}`;
       showPopup('deleteSuccessPopup',2800);
     }catch(e){alert('Delete failed: '+e.message);}
@@ -2740,6 +2953,462 @@
 
   // hide FAB until logged in
   document.getElementById('fabChat').style.display='none';
+
+  // ════════════════════════════════════════════════════
+  // ── BROADCAST POPUP SYSTEM ───────────────────────────
+  // ════════════════════════════════════════════════════
+  const BC_ICONS={info:'ℹ️',success:'✅',warn:'⚠️',danger:'🚨',announce:'📣'};
+  let bcDismissTimer=null;
+
+  function startBroadcastListener(){
+    const me=currentUser(); if(!me) return;
+    onValue(ref(db,'broadcasts'),snap=>{
+      const data=snap.val()||{};
+      Object.entries(data).forEach(([k,v])=>{
+        if(!v||!v.title) return;
+        if(v.to!=='all'&&v.to!==me) return;
+        const seenKey='ksbcdc_bc_seen_'+me;
+        let seen=[];
+        try{ seen=JSON.parse(localStorage.getItem(seenKey)||'[]'); }catch{}
+        if(seen.includes(k)) return;
+        seen.push(k); localStorage.setItem(seenKey,JSON.stringify(seen.slice(-200)));
+        const delay=(v.delay||0)*1000;
+        const duration=(v.duration||8)*1000;
+        setTimeout(()=>showBroadcastPopup(v.type||'info',v.title,v.message||'',duration,v.from||'Admin'),delay);
+      });
+    });
+  }
+
+  function showBroadcastPopup(type,title,message,duration,from){
+    const overlay=document.getElementById('broadcastOverlay');
+    const popup=document.getElementById('bcPopup');
+    if(!overlay||!popup) return;
+    popup.className='bc-popup type-'+type;
+    document.getElementById('bcPopupIcon').textContent=BC_ICONS[type]||'📢';
+    document.getElementById('bcPopupTitle').textContent=title;
+    document.getElementById('bcPopupMsg').textContent=message;
+    document.getElementById('bcPopupFrom').textContent='FROM '+(from||'ADMIN').toUpperCase();
+    overlay.classList.add('show');
+  }
+
+  window.dismissBroadcast=function(){
+    clearTimeout(bcDismissTimer);
+    const o=document.getElementById('broadcastOverlay');
+    if(o) o.classList.remove('show');
+  };
+
+  window.selectBcType=function(el){
+    document.querySelectorAll('.bc-type-opt').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+
+  function getBcType(){
+    const s=document.querySelector('.bc-type-opt.selected');
+    return s?s.dataset.type:'info';
+  }
+
+  window.previewBroadcast=function(){
+    const title=(document.getElementById('bcTitle').value||'').trim();
+    const msg=(document.getElementById('bcMsg').value||'').trim();
+    const from=(document.getElementById('bcFrom').value||'').trim()||currentUser();
+    const aMsg=document.getElementById('bcAdminMsg');
+    if(!title){ aMsg.style.color='#e74c3c'; aMsg.textContent='⚠ Enter a title to preview.'; return; }
+    aMsg.textContent='';
+    showBroadcastPopup(getBcType(),title,msg,0,from);
+  };
+
+  window.sendBroadcast=async function(){
+    const title=(document.getElementById('bcTitle').value||'').trim();
+    const msg=(document.getElementById('bcMsg').value||'').trim();
+    const delay=Math.max(0,parseInt((document.getElementById('bcDelay')||{}).value)||0);
+    const to=document.getElementById('bcTarget').value;
+    const from=(document.getElementById('bcFrom').value||'').trim()||currentUser();
+    const type=getBcType();
+    const aMsg=document.getElementById('bcAdminMsg');
+    if(!title){ aMsg.style.color='#e74c3c'; aMsg.textContent='⚠ Title is required.'; return; }
+    const btn=document.getElementById('bcSendBtn');
+    btn.disabled=true; aMsg.style.color='#7fa8c8'; aMsg.textContent='Sending…';
+    try{
+      await push(ref(db,'broadcasts'),{to,type,title,message:msg,delay,from,timestamp:Date.now()});
+      aMsg.style.color='#4ade80'; aMsg.textContent='✅ Broadcast sent!';
+      document.getElementById('bcTitle').value='';
+      document.getElementById('bcMsg').value='';
+      document.getElementById('bcFrom').value='';
+      const delayEl=document.getElementById('bcDelay'); if(delayEl) delayEl.value='0';
+      setTimeout(()=>{ aMsg.textContent=''; },3000);
+    }catch(e){ aMsg.style.color='#e74c3c'; aMsg.textContent='Error: '+e.message; }
+    btn.disabled=false;
+  };
+
+  function initBroadcastTab(){
+    const sel=document.getElementById('bcTarget'); if(!sel) return;
+    const prev=sel.value;
+    sel.innerHTML='<option value="all">Everyone</option>';
+    USERS.forEach(u=>{ if(u.name!==ADMIN_USER){ const o=document.createElement('option'); o.value=u.name; o.textContent=u.name; sel.appendChild(o); }});
+    if(prev) sel.value=prev;
+  }
+  // ════════════════════════════════════════════════════
+
+  // ════════════════════════════════════════════════════
+  // ── NOTIFICATION SYSTEM ─────────────────────────────
+  // ════════════════════════════════════════════════════
+  const NOTIF_READ_KEY = 'ksbcdc_notif_read_';
+  const APP_VERSION = 'v3.5';
+  const VERSION_NOTIF_KEY = 'ksbcdc_version_notif_35';
+  let allNotifs = [];
+  let notifPanelOpen = false;
+
+  // Firebase listener — notifications addressed to current user or "all"
+  function startNotifListener(){
+    const me = currentUser(); if(!me) return;
+    onValue(ref(db,'notifications'), snap=>{
+      const data = snap.val()||{};
+      const isAdmin = me===ADMIN_USER;
+      let hidden=[];
+      if(!isAdmin){ try{ hidden=JSON.parse(localStorage.getItem('ksbcdc_notif_hidden_'+me)||'[]'); }catch{} }
+      allNotifs = Object.entries(data)
+        .map(([k,v])=>({...v,_key:k}))
+        .filter(n=> (isAdmin || n.to==='all' || n.to===me || (Array.isArray(n.to)&&n.to.includes(me))) && !hidden.includes(n._key))
+        .sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+      renderNotifPanel();
+      updateNotifBadge();
+    });
+  }
+
+  function getReadSet(){
+    const me=currentUser(); if(!me) return new Set();
+    try{ return new Set(JSON.parse(localStorage.getItem(NOTIF_READ_KEY+me)||'[]')); }catch{ return new Set(); }
+  }
+  function markRead(key){
+    const me=currentUser(); if(!me) return;
+    const s=getReadSet(); s.add(key);
+    localStorage.setItem(NOTIF_READ_KEY+me, JSON.stringify([...s]));
+    updateNotifBadge(); renderNotifPanel();
+  }
+  window.markAllNotifsRead=function(){
+    const me=currentUser(); if(!me) return;
+    const keys=allNotifs.map(n=>n._key);
+    localStorage.setItem(NOTIF_READ_KEY+me, JSON.stringify(keys));
+    updateNotifBadge(); renderNotifPanel();
+  };
+
+  // Delete a single notification from Firebase (admin) or just hide it locally (user)
+  window.deleteNotif=async function(key){
+    const me=currentUser(); if(!me) return;
+    if(me===ADMIN_USER){
+      // Admin fully deletes from Firebase
+      try{ await set(ref(db,'notifications/'+key), null); }catch(e){ console.warn(e); }
+    } else {
+      // Non-admin: just mark as read + add to a local hidden set
+      const hiddenKey='ksbcdc_notif_hidden_'+me;
+      let hidden=[];
+      try{ hidden=JSON.parse(localStorage.getItem(hiddenKey)||'[]'); }catch{}
+      if(!hidden.includes(key)) hidden.push(key);
+      localStorage.setItem(hiddenKey, JSON.stringify(hidden));
+      markRead(key);
+      allNotifs=allNotifs.filter(n=>n._key!==key);
+      renderNotifPanel(); updateNotifBadge();
+    }
+  };
+
+  // Clear all notifications
+  window.clearAllNotifs=async function(){
+    const me=currentUser(); if(!me) return;
+    if(me===ADMIN_USER){
+      if(!confirm('Delete ALL notifications for everyone?')) return;
+      try{ await set(ref(db,'notifications'), null); }catch(e){ console.warn(e); }
+    } else {
+      // Non-admin: hide all locally
+      const hiddenKey='ksbcdc_notif_hidden_'+me;
+      const keys=allNotifs.map(n=>n._key);
+      localStorage.setItem(hiddenKey, JSON.stringify(keys));
+      localStorage.setItem(NOTIF_READ_KEY+me, JSON.stringify(keys));
+      allNotifs=[];
+      renderNotifPanel(); updateNotifBadge();
+    }
+  };
+
+  function updateNotifBadge(){
+    const read=getReadSet();
+    const unread=allNotifs.filter(n=>!read.has(n._key)).length;
+    const dot=document.getElementById('notifDot');
+    if(!dot) return;
+    dot.textContent=unread>9?'9+':unread||'';
+    dot.classList.toggle('show', unread>0);
+    document.getElementById('notifUnreadCount').textContent=unread>0?unread+' new':'';
+  }
+
+  const NOTIF_ICONS={info:'ℹ️',warn:'⚠️',danger:'🚨',success:'✅',edit:'✏️',cds:'👥',system:'🔄',version:'🚀',permission:'🔐'};
+  const NOTIF_WRAP_CLASS={info:'info',warn:'warn',danger:'danger',success:'success',edit:'edit',cds:'info',system:'system',version:'system',permission:'warn'};
+
+  function renderNotifPanel(){
+    const container=document.getElementById('notifList'); if(!container) return;
+    const me=currentUser(); if(!me){ container.innerHTML=''; return; }
+    const read=getReadSet();
+    const isAdmin=me===ADMIN_USER;
+
+    // Always show compose for admin — before any early return
+    const compose=document.getElementById('notifCompose');
+    if(compose){
+      compose.style.display=isAdmin?'block':'none';
+      if(isAdmin){
+        const sel=document.getElementById('notifTarget');
+        const prev=sel.value;
+        sel.innerHTML='<option value="all">Everyone</option>';
+        USERS.forEach(u=>{ if(u.name!==ADMIN_USER){ const o=document.createElement('option'); o.value=u.name; o.textContent=u.name; sel.appendChild(o); }});
+        if(prev) sel.value=prev;
+      }
+    }
+
+    if(!allNotifs.length){
+      container.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div class="notif-empty-text">No notifications yet</div></div>';
+      return;
+    }
+
+    // Separate unread and read
+    const unread=allNotifs.filter(n=>!read.has(n._key));
+    const readItems=allNotifs.filter(n=>read.has(n._key));
+
+    let html='';
+    if(unread.length) html+=`<div class="notif-section-label">New</div>`;
+    html+=unread.map(n=>notifItemHtml(n,false)).join('');
+    if(readItems.length){ html+=`<div class="notif-section-label">Earlier</div>`; html+=readItems.slice(0,20).map(n=>notifItemHtml(n,true)).join(''); }
+    container.innerHTML=html;
+  }
+
+  function notifItemHtml(n, isRead){
+    const icon=NOTIF_ICONS[n.type]||'🔔';
+    const wrapCls=NOTIF_WRAP_CLASS[n.type]||'info';
+    const itemCls=isRead?'notif-item':'notif-item unread '+( n.type||'info');
+    const ago=n.timestamp?formatRelativeNotif(n.timestamp):'';
+    const fromStr=n.from&&n.from!==currentUser()?`<span style="color:var(--text-light);font-size:9.5px;"> · from ${n.from.split(' ')[0]}</span>`:'';
+    return `<div class="${itemCls}" onclick="markRead('${n._key}')">
+      <div class="notif-icon-wrap ${wrapCls}">${icon}</div>
+      <div class="notif-body">
+        <div class="notif-title">${escapeHtml(n.title||'')}</div>
+        <div class="notif-msg">${escapeHtml(n.message||'')}</div>
+        <div class="notif-time">${ago}${fromStr}</div>
+      </div>
+      <button class="notif-item-del" onclick="event.stopPropagation();deleteNotif('${n._key}')" title="Delete">✕</button>
+    </div>`;
+  }
+
+  function formatRelativeNotif(ts){
+    const diff=Date.now()-ts,m=Math.floor(diff/60000),h=Math.floor(diff/3600000),d=Math.floor(diff/86400000);
+    if(diff<60000) return 'just now';
+    if(diff<3600000) return m+'m ago';
+    if(diff<86400000) return h+'h ago';
+    if(d===1) return 'yesterday';
+    if(d<7) return d+'d ago';
+    return new Date(ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  }
+
+  // ── Push a notification to Firebase ──
+  async function pushNotif({to, type, title, message, from}){
+    try{
+      await push(ref(db,'notifications'),{
+        to: to||'all', type: type||'info', title, message,
+        from: from||currentUser()||'System',
+        timestamp: Date.now()
+      });
+    }catch(e){ console.warn('Notif push failed',e); }
+  }
+
+  // ── Admin send notification ──
+  window.sendAdminNotif=async function(){
+    const to=document.getElementById('notifTarget').value;
+    const type=document.getElementById('notifType').value;
+    const title=(document.getElementById('notifTitle').value||'').trim();
+    const msg=(document.getElementById('notifMsg').value||'').trim();
+    if(!title||!msg) return;
+    await pushNotif({to, type, title, message:msg, from:currentUser()});
+    document.getElementById('notifTitle').value='';
+    document.getElementById('notifMsg').value='';
+  };
+
+  // ── Panel open/close ──
+  window.toggleNotifPanel=function(){
+    notifPanelOpen=!notifPanelOpen;
+    document.getElementById('notifPanel').classList.toggle('open', notifPanelOpen);
+  };
+  window.closeNotifPanel=function(){
+    notifPanelOpen=false;
+    document.getElementById('notifPanel').classList.remove('open');
+  };
+  document.addEventListener('click',function(e){
+    const panel=document.getElementById('notifPanel');
+    const btn=document.getElementById('navNotifBtn');
+    if(notifPanelOpen && panel && !panel.contains(e.target) && btn && !btn.contains(e.target)){
+      closeNotifPanel();
+    }
+  });
+
+  // ── VERSION UPDATE NOTIFICATION ──
+  async function sendVersionNotif(){
+    const me=currentUser(); if(!me) return;
+    const key=VERSION_NOTIF_KEY+'_'+me;
+    if(localStorage.getItem(key)) return; // this user already received it
+    // Check if this version notif already exists in Firebase for this user
+    try{
+      const snap=await get(ref(db,'notifications'));
+      const data=snap.val()||{};
+      const already=Object.values(data).some(n=>n.type==='version'&&n.title&&n.title.includes(APP_VERSION)&&(n.to==='all'||n.to===me));
+      if(!already){
+        await pushNotif({
+          to:'all', type:'version',
+          title:`🚀 ${APP_VERSION} — What's New`,
+          message:'Notification system, CDS group alerts, edit warnings, admin broadcasts, version updates & more.',
+          from:'System'
+        });
+      }
+      localStorage.setItem(key,'1');
+    }catch(e){ console.warn('Version notif error',e); }
+  }
+
+  // ════════════════════════════════════════════════════
+  // ── AUTO-TRIGGER NOTIFICATIONS ───────────────────────
+  // ════════════════════════════════════════════════════
+
+  // Called after a loan is saved — notify CDS members added
+  async function notifyCDSMembers(loanNo, checkedBy, submittedBy){
+    if(!checkedBy||!checkedBy.includes(',')) return;
+    const members=checkedBy.split(',').map(s=>s.trim()).filter(Boolean);
+    for(const member of members){
+      if(member===submittedBy) continue;
+      await pushNotif({
+        to: member, type:'cds',
+        title:`👥 Added to CDS Loan #${loanNo}`,
+        message:`${submittedBy} added you as a team member for CDS Loan #${loanNo}.`,
+        from: submittedBy
+      });
+    }
+  }
+
+  // Called when someone opens edit modal on a loan they did NOT submit
+  function notifyEditAttempt(loanNo, originalChecker, editor){
+    if(!originalChecker||!editor) return;
+    const owners=originalChecker.split(',').map(s=>s.trim()).filter(Boolean);
+    for(const owner of owners){
+      if(owner===editor) continue;
+      pushNotif({to:owner, type:'edit', title:`✏️ Edit Attempt — Loan #${loanNo}`, message:`${editor} is attempting to edit Loan #${loanNo} that you submitted.`, from:editor});
+    }
+  }
+
+  function notifyEditConfirmed(loanNo, originalChecker, editor){
+    if(!originalChecker||!editor) return;
+    const owners=originalChecker.split(',').map(s=>s.trim()).filter(Boolean);
+    for(const owner of owners){
+      if(owner===editor) continue;
+      pushNotif({to:owner, type:'warn', title:`⚠️ Loan #${loanNo} Edited`, message:`${editor} has edited Loan #${loanNo} that you submitted.`, from:editor});
+    }
+  }
+
+  // Called when a loan is moved to ongoing
+  function notifyOngoing(loanNo, startedBy){
+    pushNotif({
+      to:'all', type:'info',
+      title:`⏳ Loan #${loanNo} In Progress`,
+      message:`${startedBy} has started verifying Loan #${loanNo}.`,
+      from: startedBy
+    });
+  }
+
+  // Called when a loan is verified
+  function notifyVerified(loanNos, checkedBy){
+    const label=loanNos.length>1?`Loans #${loanNos.join(', #')}`:`Loan #${loanNos[0]}`;
+    pushNotif({
+      to:'all', type:'success',
+      title:`✅ ${label} Verified`,
+      message:`${checkedBy} has verified ${label}.`,
+      from: checkedBy
+    });
+  }
+
+  // Called when a loan is deleted
+  function notifyDeleted(loanNo, deletedBy){
+    pushNotif({
+      to:'all', type:'danger',
+      title:`🗑 Loan #${loanNo} Deleted`,
+      message:`${deletedBy} permanently deleted Loan #${loanNo}.`,
+      from: deletedBy
+    });
+  }
+
+  // Called when a loan is reverted to ongoing from edit modal
+  function notifyReverted(loanNo, revertedBy, originalChecker){
+    pushNotif({
+      to:'all', type:'warn',
+      title:`⏳ Loan #${loanNo} Moved Back to Ongoing`,
+      message:`${revertedBy} moved Loan #${loanNo} back to ongoing.`,
+      from: revertedBy
+    });
+    if(originalChecker && originalChecker!==revertedBy){
+      const owners=originalChecker.split(',').map(s=>s.trim()).filter(Boolean);
+      owners.forEach(owner=>{
+        if(owner===revertedBy) return;
+        pushNotif({
+          to: owner, type:'warn',
+          title:`⏳ Your Loan #${loanNo} Reverted`,
+          message:`${revertedBy} moved Loan #${loanNo} (submitted by you) back to ongoing.`,
+          from: revertedBy
+        });
+      });
+    }
+  }
+  // ════════════════════════════════════════════════════
+
 </script>
+
+<!-- BROADCAST OVERLAY POPUP -->
+<div id="broadcastOverlay">
+  <div class="bc-popup" id="bcPopup">
+    <div class="bc-top-bar"></div>
+    <div class="bc-inner">
+      <div class="bc-icon" id="bcPopupIcon">📢</div>
+      <div class="bc-body">
+        <div class="bc-from" id="bcPopupFrom">FROM ADMIN</div>
+        <div class="bc-title" id="bcPopupTitle"></div>
+        <div class="bc-msg" id="bcPopupMsg"></div>
+      </div>
+    </div>
+    <div class="bc-footer">
+      <button class="bc-dismiss" onclick="dismissBroadcast()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div id="notifPanel">
+  <div class="notif-head">
+    <div class="notif-head-left">
+      <span style="font-size:16px;">🔔</span>
+      <span class="notif-head-title">Notifications</span>
+      <span class="notif-head-count" id="notifUnreadCount"></span>
+    </div>
+    <div class="notif-head-actions">
+      <button class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</button>
+      <button class="btn-clear-notifs" onclick="clearAllNotifs()" title="Clear all notifications">🗑 Clear</button>
+      <button class="notif-close-btn" onclick="closeNotifPanel()">✕</button>
+    </div>
+  </div>
+  <div class="notif-list" id="notifList"><div class="notif-empty"><div class="notif-empty-icon">🔔</div><div class="notif-empty-text">No notifications yet</div></div></div>
+  <div class="notif-compose" id="notifCompose" style="display:none;">
+    <div class="notif-compose-title">📢 Send Notification</div>
+    <div class="notif-compose-row">
+      <select class="notif-compose-select" id="notifTarget">
+        <option value="all">Everyone</option>
+      </select>
+      <select class="notif-compose-select" id="notifType" style="max-width:110px;">
+        <option value="info">ℹ️ Info</option>
+        <option value="warn">⚠️ Warning</option>
+        <option value="success">✅ Success</option>
+        <option value="danger">🚨 Alert</option>
+      </select>
+    </div>
+    <input class="notif-compose-input" id="notifTitle" placeholder="Title…" maxlength="60">
+    <input class="notif-compose-input" id="notifMsg" placeholder="Message…" maxlength="200">
+    <button class="btn-notif-send" onclick="sendAdminNotif()">📢 Send</button>
+  </div>
+</div>
 </body>
 </html>
