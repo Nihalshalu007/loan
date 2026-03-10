@@ -198,6 +198,9 @@
     tr:last-child td{border-bottom:none;}
     tr:hover td{background:var(--primary-glow);}
     .loan-no{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--primary);}
+    .loan-no-cell{display:flex;flex-direction:column;gap:3px;}
+    .loan-no-linked{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px;}
+    .loan-no-extra{font-family:var(--font-mono);font-size:10px;font-weight:600;color:#6366f1;background:#e0e7ff;border:1px solid #c7d2fe;padding:1px 6px;border-radius:4px;white-space:nowrap;}
     .amount-cell{font-family:var(--font-mono);font-size:12px;}
     .date-cell{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);white-space:nowrap;}
     .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:100px;font-size:10.5px;font-weight:700;}
@@ -767,6 +770,28 @@
     .cds-note{font-size:10.5px;color:#6366f1;background:#e0e7ff;border:1px solid #c7d2fe;border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:5px;}
     .cds-members-preview{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
     .cds-member-chip{display:inline-flex;align-items:center;gap:4px;background:#e0e7ff;color:#3730a3;border:1px solid #c7d2fe;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:600;}
+
+    /* ── CDS ADDITIONAL LOAN NUMBERS ── */
+    .cds-extra-loans-wrap{display:none;flex-direction:column;gap:7px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+    .cds-extra-loans-wrap.visible{display:flex;}
+    .cds-extra-loans-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+    .cds-extra-loans-label .opt-tag{font-size:9px;background:var(--surface3);color:var(--text-light);padding:1px 6px;border-radius:100px;font-weight:600;letter-spacing:0.3px;border:1px solid var(--border);}
+    .cds-extra-loan-list{display:flex;flex-direction:column;gap:5px;}
+    .cds-extra-loan-row{display:flex;align-items:center;gap:6px;position:relative;}
+    .cds-extra-loan-input{flex:1;padding:8px 11px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color 0.18s,box-shadow 0.18s;}
+    .cds-extra-loan-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
+    .cds-extra-loan-input.status-ok{border-color:var(--accent)!important;background:var(--accent-light)!important;}
+    .cds-extra-loan-input.status-warn{border-color:var(--warn)!important;background:var(--warn-light)!important;}
+    .cds-extra-loan-input.status-error{border-color:var(--danger)!important;background:var(--danger-light)!important;}
+    .cds-extra-loan-status{font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:3px;min-width:80px;}
+    .cds-extra-loan-status.ok{color:var(--accent);}
+    .cds-extra-loan-status.warn{color:var(--warn);}
+    .cds-extra-loan-status.err{color:var(--danger);}
+    .btn-cds-loan-remove{width:26px;height:26px;border-radius:6px;background:var(--danger-light);color:var(--danger);border:1.5px solid rgba(229,62,62,0.3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;line-height:1;}
+    .btn-cds-loan-remove:hover{background:var(--danger);color:white;border-color:var(--danger);}
+    .btn-cds-add-loan{display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--surface2);color:var(--text-muted);border:1.5px dashed var(--border2);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;}
+    .btn-cds-add-loan:hover{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe;border-style:solid;}
+    .cds-extra-info{font-size:10px;color:var(--text-light);display:flex;align-items:center;gap:4px;}
   </style>
 </head>
 <body>
@@ -1009,9 +1034,13 @@
         <div class="card-title">Submit Verified Loan</div>
       </div>
       <div class="card-body">
-        <div class="field-group">
-          <label>Loan Number <span class="req">*</span></label>
+        <div class="field-group" id="loanNoGroup">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+            <label style="margin-bottom:0;">Loan Number <span class="req">*</span></label>
+            <button id="addLoanNoBtn" type="button" style="display:none;font-size:10.5px;font-weight:700;color:var(--primary);cursor:pointer;background:var(--primary-glow);border:1.5px solid var(--border);border-radius:5px;padding:2px 9px;font-family:var(--font-body);transition:all 0.15s;" onclick="CDS_LOANS.addRow('mainExtraLoanList')" title="Add another loan number">＋ Add</button>
+          </div>
           <input type="text" id="loanNo" placeholder="Enter loan number…" oninput="checkLoanStatus()">
+          <div id="mainExtraLoanList" style="display:flex;flex-direction:column;gap:5px;margin-top:5px;"></div>
         </div>
         <div id="loanStatusBanner"></div>
         <div class="field-group">
@@ -1064,6 +1093,7 @@
             <div class="cds-note">👥 CDS — optionally add multiple team members who verified this loan.</div>
             <div class="cds-members-list" id="cdsMembersList"></div>
             <button class="btn-cds-add" type="button" onclick="CDS_CHECKER.addMember('cdsMembersList')">＋ Add Team Member</button>
+
           </div>
         </div>
         <div class="field-group">
@@ -1494,7 +1524,7 @@
     fundPillClass(f){ if(!f) return'fp-none'; const l=f.toLowerCase(); if(l==='ksbcdc') return'fp-ksbcdc'; if(l==='nbcfdc') return'fp-nbcfdc'; if(l==='nmdfc') return'fp-nmdfc'; if(l==='nskfdc') return'fp-nskfdc'; return'fp-other'; },
 
     // Reset main form scheme+fund
-    resetForm(){ document.getElementById('scheme').value=''; document.getElementById('schemeOtherWrap').style.display='none'; document.getElementById('schemeOtherText').value=''; document.getElementById('fund').value=''; document.getElementById('fundOtherWrap').style.display='none'; document.getElementById('fundOtherText').value=''; CDS_CHECKER&&CDS_CHECKER.onSchemeChange('scheme','cdsCheckerWrap','singleCheckerWrap','cdsCheckerBadge','cdsMembersList'); }
+    resetForm(){ document.getElementById('scheme').value=''; document.getElementById('schemeOtherWrap').style.display='none'; document.getElementById('schemeOtherText').value=''; document.getElementById('fund').value=''; document.getElementById('fundOtherWrap').style.display='none'; document.getElementById('fundOtherText').value=''; CDS_CHECKER&&CDS_CHECKER.onSchemeChange('scheme','cdsCheckerWrap','singleCheckerWrap','cdsCheckerBadge','cdsMembersList'); CDS_LOANS&&CDS_LOANS.clearLoans&&CDS_LOANS.clearLoans('mainExtraLoanList'); }
   };
   window.SCHEME=SCHEME;
 
@@ -1511,6 +1541,12 @@
       if(cdsWrap) cdsWrap.classList.toggle('visible', isCds);
       if(singleWrap) singleWrap.style.display=isCds?'none':'';
       if(badge) badge.style.display=isCds?'inline-flex':'none';
+      // Show/hide Add Loan No button and clear extra list when toggling CDS (main form only)
+      if(listId==='cdsMembersList'){
+        const addBtn=document.getElementById('addLoanNoBtn');
+        if(addBtn) addBtn.style.display=isCds?'inline-block':'none';
+        if(!isCds){ CDS_LOANS&&CDS_LOANS.clearLoans&&CDS_LOANS.clearLoans('mainExtraLoanList'); }
+      }
       // Ensure at least 2 rows when switching to CDS
       if(isCds && listId){
         const list=document.getElementById(listId);
@@ -1584,6 +1620,130 @@
     }
   };
   window.CDS_CHECKER=CDS_CHECKER;
+  // ──────────────────────────────────────────────────────
+
+  // ── MODULE: CDS EXTRA LOAN NUMBERS ────────────────────
+  const CDS_LOANS = {
+    _timers: {},
+
+    addRow(listId){
+      const list = document.getElementById(listId);
+      if(!list) return;
+      const row = document.createElement('div');
+      row.className = 'cds-extra-loan-row';
+      const uid = 'cdsln_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      row.dataset.uid = uid;
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      row.innerHTML = `
+        <input type="text" placeholder="Additional loan number…" autocomplete="off"
+          style="flex:1;padding:10px 12px;font-family:var(--font-body);font-size:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color 0.18s,box-shadow 0.18s,background 0.18s;"
+          oninput="CDS_LOANS.onInput(this,'${listId}')"
+          onfocus="this.style.borderColor='var(--primary-light)';this.style.boxShadow='0 0 0 3px var(--primary-glow)';"
+          onblur="CDS_LOANS._applyStatusStyle(this)"
+          data-uid="${uid}">
+        <span id="status_${uid}" style="font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;min-width:64px;text-align:right;"></span>
+        <button type="button"
+          style="width:28px;height:28px;border-radius:6px;background:var(--danger-light);color:var(--danger);border:1.5px solid rgba(229,62,62,0.3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;transition:all 0.15s;"
+          onmouseover="this.style.background='var(--danger)';this.style.color='white';"
+          onmouseout="this.style.background='var(--danger-light)';this.style.color='var(--danger)';"
+          onclick="CDS_LOANS.removeRow(this,'${listId}')" title="Remove">✕</button>`;
+      list.appendChild(row);
+      row.querySelector('input').focus();
+    },
+
+    _applyStatusStyle(input){
+      if(input.classList.contains('status-ok')){ input.style.borderColor='var(--accent)'; input.style.boxShadow=''; input.style.background='var(--accent-light)'; }
+      else if(input.classList.contains('status-warn')){ input.style.borderColor='var(--warn)'; input.style.boxShadow=''; input.style.background='var(--warn-light)'; }
+      else if(input.classList.contains('status-error')){ input.style.borderColor='var(--danger)'; input.style.boxShadow=''; input.style.background='var(--danger-light)'; }
+      else { input.style.borderColor='var(--border)'; input.style.boxShadow=''; input.style.background='var(--surface2)'; }
+    },
+
+    removeRow(btn, listId){
+      const row = btn.closest('.cds-extra-loan-row');
+      if(row){
+        const uid = row.dataset.uid;
+        clearTimeout(this._timers[uid]);
+        row.remove();
+      }
+    },
+
+    onInput(input, listId){
+      const uid = input.dataset.uid;
+      clearTimeout(this._timers[uid]);
+      const val = input.value.trim();
+      const statusEl = document.getElementById('status_' + uid);
+      if(!val){
+        input.classList.remove('status-ok','status-warn','status-error');
+        this._applyStatusStyle(input);
+        if(statusEl){ statusEl.textContent=''; statusEl.style.color=''; }
+        return;
+      }
+      this._timers[uid] = setTimeout(()=>{
+        this.checkDuplicate(input, val, listId, uid);
+      }, 350);
+    },
+
+    checkDuplicate(input, loanNo, listId, uid){
+      const statusEl = document.getElementById('status_' + uid);
+      const setStatus = (cls, msg, color) => {
+        input.classList.remove('status-ok','status-warn','status-error');
+        input.classList.add(cls);
+        this._applyStatusStyle(input);
+        if(statusEl){ statusEl.textContent=msg; statusEl.style.color=color; }
+      };
+
+      // Check against main primary loan number
+      const primaryLoanNo = (document.getElementById('loanNo')||{value:''}).value.trim();
+      if(primaryLoanNo && loanNo.toLowerCase() === primaryLoanNo.toLowerCase()){
+        setStatus('status-error','⚠ Same as primary','var(--danger)'); return;
+      }
+
+      // Check for duplicates within the same extra list
+      const allInputs = document.querySelectorAll(`#${listId} input[type="text"]`);
+      let isDup = false;
+      allInputs.forEach(inp => { if(inp !== input && inp.value.trim().toLowerCase() === loanNo.toLowerCase()) isDup = true; });
+      if(isDup){ setStatus('status-error','⚠ Duplicate','var(--danger)'); return; }
+
+      // Check Firebase verified (primary key or inside linkedLoanNos)
+      if(latestVerified && latestVerified[loanNo]){ setStatus('status-warn','✅ Already verified','var(--warn)'); return; }
+      const isLinked = latestVerified && Object.values(latestVerified).some(r=>Array.isArray(r.linkedLoanNos)&&r.linkedLoanNos.includes(loanNo));
+      if(isLinked){ setStatus('status-warn','✅ Already verified','var(--warn)'); return; }
+
+      // Check ongoing
+      if(latestOngoing && latestOngoing[loanNo]){ setStatus('status-warn','⏳ Already ongoing','var(--warn)'); return; }
+
+      // All good
+      setStatus('status-ok','✓ OK','var(--accent)');
+    },
+
+    getLoans(listId){
+      const list = document.getElementById(listId); if(!list) return [];
+      return [...list.querySelectorAll('input[type="text"]')]
+        .map(i => i.value.trim()).filter(Boolean);
+    },
+
+    clearLoans(listId){
+      const list = document.getElementById(listId); if(list) list.innerHTML = '';
+    },
+
+    // Save each extra loan number as a linked entry in Firebase
+    async saveExtraLoans(primaryLoanNo, extraLoanNos, loanData, dbRef, setFn){
+      const promises = extraLoanNos.map(ln => {
+        if(!ln || ln === primaryLoanNo) return;
+        // Skip if already verified or ongoing (don't overwrite)
+        if(latestVerified[ln] || latestOngoing[ln]) return;
+        return setFn(dbRef(db,'loans/'+ln), {
+          ...loanData,
+          loanNo: ln,
+          _linkedTo: primaryLoanNo,
+          editCount: 0,
+          timestamp: Date.now()
+        });
+      });
+      await Promise.all(promises.filter(Boolean));
+    }
+  };
+  window.CDS_LOANS = CDS_LOANS;
   // ──────────────────────────────────────────────────────
 
   const THEME_PREFIX = 'ksbcdc_theme_';
@@ -1950,10 +2110,26 @@
 
   // ── DATA ──
   function mergeAndRefresh(){
-    const verified=Object.values(latestVerified).map(l=>({...l,_status:'verified',timestamp:l.timestamp||(l.date?new Date(l.date).getTime():0)}));
-    const vNos=new Set(verified.map(l=>l.loanNo));
-    const ongoing=Object.values(latestOngoing).filter(l=>!vNos.has(l.loanNo)).map(l=>({...l,_status:'ongoing',timestamp:l.startedAt||0}));
-    allLoans=[...ongoing,...verified];
+    const verifiedRaw=Object.values(latestVerified).map(l=>({...l,_status:'verified',timestamp:l.timestamp||(l.date?new Date(l.date).getTime():0)}));
+    const vNos=new Set(verifiedRaw.map(l=>l.loanNo));
+    const ongoingRaw=Object.values(latestOngoing).filter(l=>!vNos.has(l.loanNo)).map(l=>({...l,_status:'ongoing',timestamp:l.startedAt||0}));
+
+    // Group records sharing a _groupId into one display row (primary = lowest loanNo alphabetically, _groupNos = all)
+    function groupLoans(loans){
+      const groups={}, singles=[];
+      loans.forEach(l=>{
+        if(l._groupId){ if(!groups[l._groupId]) groups[l._groupId]=[]; groups[l._groupId].push(l); }
+        else singles.push(l);
+      });
+      const grouped=Object.values(groups).map(members=>{
+        members.sort((a,b)=>String(a.loanNo).localeCompare(String(b.loanNo)));
+        const primary=members[0];
+        return {...primary, _groupNos: members.map(m=>m.loanNo)};
+      });
+      return [...singles, ...grouped];
+    }
+
+    allLoans=[...groupLoans(ongoingRaw),...groupLoans(verifiedRaw)];
     allLoans.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
     updateStats(); applyFilters();
     const ln=document.getElementById('loanNo').value.trim();
@@ -2149,17 +2325,16 @@
     if(!loanNo){banner.style.display='none';banner.className='';banner.innerHTML='';setFormDisabled(false);setButtons(false);clearMsg();return;}
     statusCheckTimer=setTimeout(()=>{
       if(latestVerified[loanNo]){banner.style.display='block';banner.className='completed';banner.innerHTML=`<div class="banner-row"><div class="banner-info">✅ <strong>Loan #${loanNo}</strong> is already <strong>Verified</strong>.</div></div>`;setFormDisabled(true);setButtons(true);clearMsg();return;}
+
       if(latestOngoing[loanNo]){
         const od=latestOngoing[loanNo],me=currentUser(),isMine=od.startedBy===me;
         banner.style.display='block';
         if(isMine){
           banner.className='ongoing';
           banner.innerHTML=`<div class="banner-row"><div class="banner-info"><div class="spinner"></div><div><strong>Loan #${loanNo}</strong> Ongoing — started by you<br><span style="font-size:10.5px;opacity:0.7;">${od.startedAt?formatDate(od.startedAt):''}</span></div></div><button class="btn-complete" onclick="openCompleteModal('${loanNo}')">✅ Complete</button></div>`;
-          // ── AUTO-FILL form fields from the ongoing record ──
           prefillFormFromOngoing(loanNo, od);
           setFormDisabled(false);
           setButtons(false);
-          // Only disable the "Mark Ongoing" button since it's already ongoing
           document.getElementById('btnOngoing').disabled=true;
         }
         else{banner.className='locked';banner.innerHTML=`<div class="banner-row"><div class="banner-info">🔒 <strong>Loan #${loanNo}</strong> — started by <em>${od.startedBy||'another user'}</em></div></div>`;setFormDisabled(true);setButtons(true);}
@@ -2263,26 +2438,46 @@
     if(!scheme){msgEl.textContent='⚠ Please select a Loan Scheme.';return;}
     if(!checkedBy){msgEl.textContent='⚠ Please log in first.';return;}
 
-    if(latestVerified[loanNo]){msgEl.textContent='⚠ Already verified!';return;}
+    // All loan numbers to save (primary + additional for CDS)
+    const extraLoans = scheme==='CDS' ? CDS_LOANS.getLoans('mainExtraLoanList').filter(l=>l&&l!==loanNo) : [];
+    const allNos = [loanNo, ...extraLoans];
+
+    // Duplicate check for all numbers
+    for(const ln of allNos){
+      if(latestVerified[ln]){msgEl.textContent=`⚠ Loan #${ln} is already verified!`;return;}
+      if(latestOngoing[ln]&&latestOngoing[ln].startedBy&&latestOngoing[ln].startedBy!==checkedBy){msgEl.textContent=`⚠ Loan #${ln} is ongoing (started by ${latestOngoing[ln].startedBy}).`;return;}
+    }
+
+    // Shared group ID so all numbers in this batch belong together for display
+    const groupId = allNos.length>1 ? (loanNo+'_grp_'+Date.now()) : null;
+    const ts = Date.now();
+
     if(latestOngoing[loanNo]){
       const od=latestOngoing[loanNo];
-      if(od.startedBy&&od.startedBy!==checkedBy){msgEl.textContent='⚠ Loan is Ongoing — started by '+od.startedBy+'.';return;}
       try{
-        await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
-        await set(ref(db,'ongoing/'+loanNo),null);
+        for(const ln of allNos){
+          const rec={loanNo:ln,scheme,fund,name,amount,checkedBy,remarks,timestamp:ts,editCount:0};
+          if(groupId) rec._groupId=groupId;
+          await set(ref(db,'loans/'+ln),rec);
+          if(latestOngoing[ln]) await set(ref(db,'ongoing/'+ln),null);
+        }
         justAddedLoanNo=loanNo;
-        document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
+        document.getElementById('popupLoanNo').textContent=`Loan # ${allNos.join(', ')}`; showPopup('successPopup',2800);
         ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
-        SCHEME.resetForm(); checkLoanStatus();
+        SCHEME.resetForm(); CDS_LOANS.clearLoans('mainExtraLoanList'); checkLoanStatus();
       }catch(e){msgEl.textContent='Error: '+e.message;}
       return;
     }
     try{
-      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
+      for(const ln of allNos){
+        const rec={loanNo:ln,scheme,fund,name,amount,checkedBy,remarks,timestamp:ts,editCount:0};
+        if(groupId) rec._groupId=groupId;
+        await set(ref(db,'loans/'+ln),rec);
+      }
       justAddedLoanNo=loanNo;
-      document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
+      document.getElementById('popupLoanNo').textContent=`Loan # ${allNos.join(', ')}`; showPopup('successPopup',2800);
       ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value='');
-      SCHEME.resetForm(); checkLoanStatus();
+      SCHEME.resetForm(); CDS_LOANS.clearLoans('mainExtraLoanList'); checkLoanStatus();
     }catch(e){msgEl.textContent='Error: '+e.message;}
   };
 
@@ -2503,7 +2698,12 @@
         }
 
         const rowClass=isNew?'row-new':(isEdited?'row-edited':'');
-        return `<tr class="${rowClass}" id="row_${loan.loanNo}"><td><span class="loan-no">${loan.loanNo||'—'}</span></td><td>${nameTd}</td><td>${schemeTd}</td><td>${fundTd}</td><td><span class="amount-cell">${amtStr}</span></td><td>${checkerDisplay}</td><td>${remarksTd}</td><td><span class="date-cell">${dateStr}</span></td><td>${statusBadge}</td><td>${actionBtns}</td></tr>`;
+        // All loan numbers in the group rendered identically, stacked
+        const groupNos = Array.isArray(loan._groupNos) ? loan._groupNos : [loan.loanNo||'—'];
+        const loanNoCell = groupNos.length > 1
+          ? `<div style="display:flex;flex-direction:column;gap:3px;">${groupNos.map(n=>`<span class="loan-no">${n}</span>`).join('')}</div>`
+          : `<span class="loan-no">${groupNos[0]}</span>`;
+        return `<tr class="${rowClass}" id="row_${loan.loanNo}"><td>${loanNoCell}</td><td>${nameTd}</td><td>${schemeTd}</td><td>${fundTd}</td><td><span class="amount-cell">${amtStr}</span></td><td>${checkerDisplay}</td><td>${remarksTd}</td><td><span class="date-cell">${dateStr}</span></td><td>${statusBadge}</td><td>${actionBtns}</td></tr>`;
       }).join('');
     }
     window._openRm=function(idx){const loan=filteredLoans[idx];if(!loan)return;openRemarksModal(loan.loanNo,loan.remarks,loan.checkedBy||loan.startedBy,loan.timestamp);};
