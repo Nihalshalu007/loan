@@ -117,6 +117,45 @@
     .nav-user-name{font-size:11.5px;font-weight:700;color:white;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .nav-switch-lbl{font-size:9px;color:rgba(255,255,255,0.45);}
 
+    /* ── NAV TICKER BANNER ── */
+    #navTicker{background:linear-gradient(90deg,rgba(0,0,0,0.22) 0%,rgba(255,255,255,0.06) 100%);border-bottom:1px solid rgba(255,255,255,0.10);height:0;overflow:hidden;display:flex;align-items:center;position:sticky;top:64px;z-index:199;transition:height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.35s;opacity:0;backdrop-filter:blur(4px);background-color:var(--nav-bg);}
+    #navTicker.visible{height:30px;opacity:1;}
+    .ticker-inner{display:flex;align-items:center;width:100%;overflow:hidden;padding:0 0 0 14px;position:relative;height:30px;}
+    .ticker-label{font-size:9px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,0.5);white-space:nowrap;padding:0 12px 0 0;border-right:1px solid rgba(255,255,255,0.18);margin-right:14px;flex-shrink:0;display:flex;align-items:center;gap:5px;font-family:var(--font-mono);}
+    .ticker-label-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse 1.8s infinite;flex-shrink:0;}
+    .ticker-track{flex:1;overflow:hidden;height:100%;display:flex;align-items:center;}
+    .ticker-scroll{display:inline-flex;align-items:center;white-space:nowrap;animation:tickerScroll 28s linear infinite;will-change:transform;font-size:12px;font-weight:600;color:rgba(255,255,255,0.88);letter-spacing:0.2px;}
+    .ticker-scroll:hover{animation-play-state:paused;}
+    .ticker-sep{margin:0 32px;opacity:0.3;font-size:10px;color:rgba(255,255,255,0.5);}
+    @keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+    .ticker-close{width:28px;height:28px;background:none;border:none;color:rgba(255,255,255,0.35);font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:color 0.15s;margin-right:6px;}
+    .ticker-close:hover{color:rgba(255,255,255,0.85);}
+    /* Admin banner editor */
+    .banner-editor-wrap{background:#0a1520;border:1.5px solid #1e3a5f;border-radius:12px;padding:16px 18px;margin-top:18px;}
+    .banner-editor-title{font-size:12px;font-weight:700;color:#c9a84c;letter-spacing:0.5px;margin-bottom:14px;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:7px;}
+    .banner-editor-field{margin-bottom:12px;}
+    .banner-editor-label{font-size:9.5px;font-weight:700;letter-spacing:1px;color:#4a6080;text-transform:uppercase;margin-bottom:5px;display:block;font-family:var(--font-mono);}
+    .banner-editor-input{width:100%;padding:9px 12px;background:#112233;border:1px solid #1e3a5f;border-radius:7px;color:#c8d9f0;font-family:'Sora',sans-serif;font-size:12.5px;outline:none;transition:border-color 0.15s;box-sizing:border-box;}
+    .banner-editor-input:focus{border-color:#c9a84c;}
+    .banner-editor-input::placeholder{color:#4a6080;}
+    .banner-speed-row{display:flex;gap:7px;flex-wrap:wrap;}
+    .banner-speed-opt{flex:1;min-width:60px;padding:7px 10px;background:#112233;border:1.5px solid #1e3a5f;border-radius:7px;color:#4a6080;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.15s;}
+    .banner-speed-opt.active,.banner-speed-opt:hover{border-color:#c9a84c;color:#c9a84c;background:rgba(201,168,76,0.1);}
+    .banner-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .banner-toggle-label{font-size:12px;font-weight:600;color:#c8d9f0;font-family:'Space Grotesk',sans-serif;}
+    .banner-toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+    .banner-toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .banner-toggle-track{position:absolute;inset:0;background:#1e3a5f;border-radius:100px;cursor:pointer;transition:background 0.2s;}
+    .banner-toggle input:checked+.banner-toggle-track{background:#c9a84c;}
+    .banner-toggle-track::before{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
+    .banner-toggle input:checked+.banner-toggle-track::before{transform:translateX(18px);}
+    .banner-action-row{display:flex;gap:8px;margin-top:4px;}
+    .btn-banner-save{flex:1;padding:10px;background:#c9a84c;color:#0a1520;border:none;border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity 0.15s;}
+    .btn-banner-save:hover{opacity:0.85;}
+    .btn-banner-clear{padding:10px 14px;background:rgba(229,62,62,0.12);color:#fc8181;border:1px solid rgba(229,62,62,0.3);border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+    .btn-banner-clear:hover{background:#e53e3e;color:white;border-color:#e53e3e;}
+    .banner-editor-msg{font-size:11.5px;color:#4ecdc4;margin-top:8px;min-height:15px;}
+
     .main-wrap{max-width:1240px;margin:0 auto;padding:26px 20px 60px;}
 
     /* ── STATS ── */
@@ -1128,6 +1167,37 @@
           <div class="bc-admin-msg" id="bcAdminMsg"></div>
           <div id="bcScheduledList" class="bc-scheduled-list"></div>
         </div>
+
+        <!-- MOVING BANNER EDITOR -->
+        <div class="banner-editor-wrap">
+          <div class="banner-editor-title">📟 Moving Nav Banner</div>
+          <div class="banner-toggle-row">
+            <span class="banner-toggle-label">Show banner to all users</span>
+            <label class="banner-toggle">
+              <input type="checkbox" id="bannerEnabled" onchange="saveBannerSettings()">
+              <div class="banner-toggle-track"></div>
+            </label>
+          </div>
+          <div class="banner-editor-field">
+            <span class="banner-editor-label">Banner Message</span>
+            <input class="banner-editor-input" type="text" id="bannerMsgInput"
+              placeholder="e.g. Please complete pending verifications before 5 PM today..."
+              maxlength="300">
+          </div>
+          <div class="banner-editor-field">
+            <span class="banner-editor-label">Scroll Speed</span>
+            <div class="banner-speed-row" id="bannerSpeedRow">
+              <div class="banner-speed-opt" data-speed="48" onclick="selectBannerSpeed(this)">Slow</div>
+              <div class="banner-speed-opt active" data-speed="28" onclick="selectBannerSpeed(this)">Normal</div>
+              <div class="banner-speed-opt" data-speed="16" onclick="selectBannerSpeed(this)">Fast</div>
+            </div>
+          </div>
+          <div class="banner-action-row">
+            <button class="btn-banner-save" onclick="saveBannerSettings()">Save &amp; Publish</button>
+            <button class="btn-banner-clear" onclick="clearBanner()">Clear</button>
+          </div>
+          <div class="banner-editor-msg" id="bannerEditorMsg"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1165,6 +1235,17 @@
     </div>
   </div>
 </nav>
+
+<!-- NAV TICKER BANNER -->
+<div id="navTicker">
+  <div class="ticker-inner">
+    <div class="ticker-label"><span class="ticker-label-dot"></span>NOTICE</div>
+    <div class="ticker-track">
+      <div class="ticker-scroll" id="tickerScroll"></div>
+    </div>
+    <button class="ticker-close" onclick="hideTicker()" title="Dismiss">✕</button>
+  </div>
+</div>
 
 <div class="main-wrap">
   <!-- STATS ROW -->
@@ -2297,7 +2378,7 @@
     if(tab==='logs') loadLoginLogs();
     else if(tab==='editlog') renderEditLog();
     else if(tab==='deletelog') renderDeleteLog();
-    else if(tab==='broadcast') setTimeout(initBroadcastTab, 0);
+    else if(tab==='broadcast') { setTimeout(initBroadcastTab, 0); setTimeout(()=>{ if(typeof syncBannerAdminUI==='function') syncBannerAdminUI(); }, 100); }
     else renderUserList();
   };
   window.deleteAllEditLogs=function(){ if(!confirm('Delete ALL edit logs?')) return; set(ref(db,'editLogs'),null).then(()=>{ allEditLogs=[]; renderEditLog(); }); };
@@ -2582,10 +2663,12 @@
 
       if(latestOngoing[loanNo]){
         const od=latestOngoing[loanNo],me=currentUser(),isMine=od.startedBy===me;
+        const isCDS = od.scheme==='CDS';
         banner.style.display='block';
-        if(isMine){
+        if(isMine || isCDS){
           banner.className='ongoing';
-          banner.innerHTML=`<div class="banner-row"><div class="banner-info"><div class="spinner"></div><div><strong>Loan #${loanNo}</strong> Ongoing — started by you<br><span style="font-size:10.5px;opacity:0.7;">${od.startedAt?formatDate(od.startedAt):''}</span></div></div><button class="btn-complete" onclick="openCompleteModal('${loanNo}')">✅ Complete</button></div>`;
+          const startedLabel = isMine ? 'started by you' : `started by <em>${od.startedBy||'another user'}</em>`;
+          banner.innerHTML=`<div class="banner-row"><div class="banner-info"><div class="spinner"></div><div><strong>Loan #${loanNo}</strong> Ongoing — ${startedLabel}<br><span style="font-size:10.5px;opacity:0.7;">${od.startedAt?formatDate(od.startedAt):''}</span></div></div><button class="btn-complete" onclick="openCompleteModal('${loanNo}')">✅ Complete</button></div>`;
           prefillFormFromOngoing(loanNo, od);
           setFormDisabled(false);
           setButtons(false);
@@ -2638,7 +2721,8 @@
 
   window.openCompleteModal=function(loanNo){
     const me=currentUser(),od=latestOngoing[loanNo];
-    if(od&&od.startedBy&&od.startedBy!==me){alert(`🔒 Only ${od.startedBy} can complete this.`);return;}
+    const isCDS = od && od.scheme==='CDS';
+    if(od&&od.startedBy&&od.startedBy!==me&&!isCDS){alert(`🔒 Only ${od.startedBy} can complete this.`);return;}
     completeTargetLoanNo=loanNo;
     document.getElementById('m_msg').textContent='';
     document.getElementById('m_checkedBy').value=me||'';
@@ -2701,7 +2785,7 @@
     // Duplicate check for all numbers
     for(const ln of allNos){
       if(latestVerified[ln]){msgEl.textContent=`⚠ Loan #${ln} is already verified!`;return;}
-      if(latestOngoing[ln]&&latestOngoing[ln].startedBy&&latestOngoing[ln].startedBy!==checkedBy){msgEl.textContent=`⚠ Loan #${ln} is ongoing (started by ${latestOngoing[ln].startedBy}).`;return;}
+      if(latestOngoing[ln]&&latestOngoing[ln].startedBy&&latestOngoing[ln].startedBy!==checkedBy&&scheme!=='CDS'){msgEl.textContent=`⚠ Loan #${ln} is ongoing (started by ${latestOngoing[ln].startedBy}).`;return;}
     }
 
     // Shared group ID so all numbers in this batch belong together for display
@@ -2966,7 +3050,8 @@
         let actionBtns;
         if(isOngoing){
           const isMine=!loan.startedBy||loan.startedBy===me;
-          actionBtns=`<div class="action-btns"><button class="btn-action btn-complete-inline" onclick="openCompleteModal('${loan.loanNo}')" ${isMine?'':'disabled'}>✅</button></div>`;
+          const isCDS = loan.scheme==='CDS';
+          actionBtns=`<div class="action-btns"><button class="btn-action btn-complete-inline" onclick="openCompleteModal('${loan.loanNo}')" ${(isMine||isCDS)?'':'disabled'}>✅</button></div>`;
         } else {
           const histBg=editCount>0?'background:var(--edit-light);color:var(--edit);border-color:var(--edit-border);':'background:var(--surface2);color:var(--text-light);border-color:var(--border);';
           actionBtns=`<div class="action-btns"><button class="btn-action btn-edit-inline" onclick="openEditModal('${loan.loanNo}')">✏️ Edit</button><button class="btn-action" style="padding:4px 9px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:all 0.15s;border:1.5px solid;${histBg}" onclick="openEditHistoryModal('${loan.loanNo}')" title="View edit history">📜${editCount>0?` <span style='font-family:var(--font-mono)'>${editCount}</span>`:''}</button></div>`;
@@ -3418,6 +3503,114 @@
     }
   }
   // ════════════════════════════════════════════════════
+
+  // ════════════════════════════════════════════════════
+  // ── NAV TICKER BANNER MODULE ─────────────────────────
+  // ════════════════════════════════════════════════════
+
+  (function() {
+    const BANNER_REF = 'navBanner';
+    let _tickerDismissed = false;
+    let _currentBannerData = null;
+
+    // Apply banner data to the DOM
+    function applyBanner(data) {
+      _currentBannerData = data;
+      const ticker  = document.getElementById('navTicker');
+      const scroll  = document.getElementById('tickerScroll');
+      if (!ticker || !scroll) return;
+
+      if (!data || !data.enabled || !data.message || !data.message.trim()) {
+        ticker.classList.remove('visible');
+        return;
+      }
+      if (_tickerDismissed) return;
+
+      // Build doubled content for seamless loop
+      const msg = data.message.trim();
+      const sep = ' ••• ';
+      const doubled = msg + sep + msg + sep + msg + sep + msg + sep;
+      scroll.innerHTML = doubled;
+
+      // Apply speed
+      const speed = parseInt(data.speed) || 28;
+      scroll.style.animationDuration = speed + 's';
+
+      ticker.classList.add('visible');
+      // Update the sticky top offset: nav is 64px, ticker is 30px
+      document.getElementById('navTicker').style.top = '64px';
+    }
+
+    // Listen for Firebase changes
+    onValue(ref(db, BANNER_REF), snap => {
+      const data = snap.val();
+      applyBanner(data);
+      // Sync admin panel UI if open
+      syncBannerAdminUI(data);
+    });
+
+    // Sync the admin editor fields to current data
+    function syncBannerAdminUI(data) {
+      const inp     = document.getElementById('bannerMsgInput');
+      const toggle  = document.getElementById('bannerEnabled');
+      if (!inp || !toggle) return;
+      if (data) {
+        inp.value        = data.message || '';
+        toggle.checked   = !!data.enabled;
+        const speed      = String(data.speed || '28');
+        document.querySelectorAll('.banner-speed-opt').forEach(el => {
+          el.classList.toggle('active', el.dataset.speed === speed);
+        });
+      } else {
+        inp.value = '';
+        toggle.checked = false;
+      }
+    }
+
+    // Called when admin panel broadcast tab is opened — sync state
+    window.syncBannerAdminUI = function() {
+      syncBannerAdminUI(_currentBannerData);
+    };
+
+    // Save banner settings to Firebase
+    window.saveBannerSettings = function() {
+      const msg    = (document.getElementById('bannerMsgInput') || {}).value || '';
+      const enabled = (document.getElementById('bannerEnabled') || {}).checked || false;
+      const speedEl = document.querySelector('.banner-speed-opt.active');
+      const speed  = speedEl ? parseInt(speedEl.dataset.speed) : 28;
+      const msgEl  = document.getElementById('bannerEditorMsg');
+      set(ref(db, BANNER_REF), { message: msg, enabled, speed, updatedBy: currentUser() || 'Admin', updatedAt: Date.now() })
+        .then(() => { if (msgEl) { msgEl.textContent = enabled && msg ? '✅ Banner published!' : '✅ Saved.'; setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 3000); } })
+        .catch(e => { if (msgEl) msgEl.textContent = '⚠ Error: ' + e.message; });
+    };
+
+    // Clear / hide banner
+    window.clearBanner = function() {
+      const msgEl = document.getElementById('bannerEditorMsg');
+      set(ref(db, BANNER_REF), { message: '', enabled: false, speed: 28 })
+        .then(() => { if (msgEl) { msgEl.textContent = '🗑 Banner cleared.'; setTimeout(() => { if (msgEl) msgEl.textContent = ''; }, 3000); } });
+      const inp = document.getElementById('bannerMsgInput');
+      const tog = document.getElementById('bannerEnabled');
+      if (inp) inp.value = '';
+      if (tog) tog.checked = false;
+    };
+
+    // Dismiss ticker for this session
+    window.hideTicker = function() {
+      _tickerDismissed = true;
+      const ticker = document.getElementById('navTicker');
+      if (ticker) ticker.classList.remove('visible');
+    };
+
+    // Speed selector
+    window.selectBannerSpeed = function(el) {
+      document.querySelectorAll('.banner-speed-opt').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      // Live-preview speed change
+      const scroll = document.getElementById('tickerScroll');
+      if (scroll) scroll.style.animationDuration = parseInt(el.dataset.speed) + 's';
+    };
+  })();
 
   // ════════════════════════════════════════════════════
   // ── PENDING LOANS MODULE ─────────────────────────────
