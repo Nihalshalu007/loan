@@ -1480,6 +1480,11 @@
       </div>
     </div>
     <div class="modal-field field-group"><label>Remarks</label><textarea id="m_remarks" placeholder="Remarks…" style="min-height:56px;"></textarea></div>
+    <div class="cds-extra-loans-wrap" id="m_cdsExtraLoansWrap">
+      <div class="cds-extra-loans-label">Additional Loan Numbers <span class="opt-tag">optional</span></div>
+      <div class="cds-extra-loan-list" id="m_extraLoanList"></div>
+      <button class="btn-cds-add-loan" type="button" onclick="CDS_LOANS.addRow('m_extraLoanList')">＋ Add Loan Number</button>
+    </div>
     <p id="m_msg"></p>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeCompleteModal()">Cancel</button>
@@ -1508,6 +1513,11 @@
       </div>
     </div>
     <div class="modal-field field-group"><label>Remarks</label><textarea id="e_remarks" placeholder="Remarks…" style="min-height:56px;"></textarea></div>
+    <div class="cds-extra-loans-wrap" id="e_cdsExtraLoansWrap">
+      <div class="cds-extra-loans-label">Additional Loan Numbers <span class="opt-tag">optional</span></div>
+      <div class="cds-extra-loan-list" id="e_extraLoanList"></div>
+      <button class="btn-cds-add-loan" type="button" onclick="CDS_LOANS.addRow('e_extraLoanList')">＋ Add Loan Number</button>
+    </div>
     <p id="e_msg"></p>
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeEditModal()">Cancel</button>
@@ -1864,6 +1874,15 @@
         const addBtn=document.getElementById('addLoanNoBtn');
         if(addBtn) addBtn.style.display=isCds?'inline-block':'none';
         if(!isCds){ CDS_LOANS&&CDS_LOANS.clearLoans&&CDS_LOANS.clearLoans('mainExtraLoanList'); }
+      }
+      // Toggle extra loan wrap for complete modal and edit modal
+      if(listId==='m_cdsMembersList'){
+        const ew=document.getElementById('m_cdsExtraLoansWrap');
+        if(ew){ ew.classList.toggle('visible', isCds); if(!isCds){ const el=document.getElementById('m_extraLoanList'); if(el) el.innerHTML=''; } }
+      }
+      if(listId==='e_cdsMembersList'){
+        const ew=document.getElementById('e_cdsExtraLoansWrap');
+        if(ew){ ew.classList.toggle('visible', isCds); if(!isCds){ const el=document.getElementById('e_extraLoanList'); if(el) el.innerHTML=''; } }
       }
       // Ensure at least 2 rows when switching to CDS
       if(isCds && listId){
@@ -2709,11 +2728,15 @@
     if(!scheme){msgEl.textContent='⚠ Loan Scheme required.';return;}
     if(latestVerified[loanNo]){msgEl.textContent='⚠ Already verified!';return;}
     if(latestOngoing[loanNo]){msgEl.textContent='⚠ Already ongoing!';return;}
-    await set(ref(db,'ongoing/'+loanNo),{
+    // Collect extra loan numbers for CDS
+    const extraLoans = scheme==='CDS' ? CDS_LOANS.getLoans('mainExtraLoanList').filter(l=>l&&l!==loanNo) : [];
+    const ongoingData = {
       loanNo, startedBy:checkedBy, scheme, fund: fund||'',
       name: name||'', amount: amount||'', remarks: remarks||'',
       startedAt:Date.now()
-    });
+    };
+    if(extraLoans.length) ongoingData.extraLoans=extraLoans;
+    await set(ref(db,'ongoing/'+loanNo), ongoingData);
     document.getElementById('popupOngoingNo').textContent=`Loan # ${loanNo}`;
     showPopup('ongoingPopup',2600);
     checkLoanStatus();
@@ -2736,10 +2759,31 @@
     document.getElementById('m_amount').value=od&&od.amount?od.amount:document.getElementById('amount').value;
     document.getElementById('m_remarks').value=od&&od.remarks?od.remarks:document.getElementById('remarks').value;
     document.getElementById('completeModal').style.display='flex';
-    // Trigger CDS UI if scheme is already CDS
-    setTimeout(()=>CDS_CHECKER.onSchemeChange('m_scheme','m_cdsCheckerWrap','m_singleCheckerWrap','m_cdsCheckerBadge','m_cdsMembersList'),0);
+    // Trigger CDS UI if scheme is CDS, and pre-fill members from ongoing record
+    setTimeout(()=>{
+      CDS_CHECKER.onSchemeChange('m_scheme','m_cdsCheckerWrap','m_singleCheckerWrap','m_cdsCheckerBadge','m_cdsMembersList');
+      if(isCDS && od && od.startedBy){
+        // Pre-fill CDS team members from the ongoing record's startedBy field
+        CDS_CHECKER.setMembers('m_cdsMembersList', od.startedBy);
+      }
+      // Show/hide extra loans section based on scheme
+      const extraWrap=document.getElementById('m_cdsExtraLoansWrap');
+      if(extraWrap) extraWrap.classList.toggle('visible', isCDS);
+      // Pre-fill extra loan numbers if stored in ongoing record
+      if(isCDS && od && od.extraLoans && od.extraLoans.length){
+        const listEl=document.getElementById('m_extraLoanList');
+        if(listEl){ listEl.innerHTML=''; od.extraLoans.forEach(ln=>{ CDS_LOANS.addRow('m_extraLoanList'); const rows=listEl.querySelectorAll('.cds-extra-loan-row'); const lastInput=rows[rows.length-1].querySelector('input'); if(lastInput) lastInput.value=ln; }); }
+      } else if(isCDS){
+        // Pre-fill from the main form's extra loan list if available
+        const mainExtra=CDS_LOANS.getLoans('mainExtraLoanList').filter(Boolean);
+        if(mainExtra.length){
+          const listEl=document.getElementById('m_extraLoanList');
+          if(listEl){ listEl.innerHTML=''; mainExtra.forEach(ln=>{ CDS_LOANS.addRow('m_extraLoanList'); const rows=listEl.querySelectorAll('.cds-extra-loan-row'); const lastInput=rows[rows.length-1].querySelector('input'); if(lastInput) lastInput.value=ln; }); }
+        }
+      }
+    },0);
   };
-  window.closeCompleteModal=function(){document.getElementById('completeModal').style.display='none';completeTargetLoanNo=null;};
+  window.closeCompleteModal=function(){document.getElementById('completeModal').style.display='none';completeTargetLoanNo=null;const ml=document.getElementById('m_extraLoanList');if(ml)ml.innerHTML='';const ew=document.getElementById('m_cdsExtraLoansWrap');if(ew)ew.classList.remove('visible');};
   window.confirmComplete=async function(){
     const loanNo=completeTargetLoanNo,
           scheme=SCHEME.get('m_scheme','m_schemeOtherText'),
@@ -2750,15 +2794,27 @@
           remarks=document.getElementById('m_remarks').value.trim(),
           mMsg=document.getElementById('m_msg');
     if(!scheme){mMsg.textContent='⚠ Please select a Loan Scheme.';return;}
-    if(!checkedBy){mMsg.textContent='⚠ Not logged in.';return;}
+    // For CDS: if no members selected in modal, fall back to current user
+    const resolvedChecker = checkedBy || (scheme==='CDS' ? currentUser() : '');
+    if(!resolvedChecker){mMsg.textContent='⚠ Not logged in.';return;}
+
+    // Extra loan numbers (CDS only)
+    const extraLoans = scheme==='CDS' ? CDS_LOANS.getLoans('m_extraLoanList').filter(l=>l&&l!==loanNo) : [];
+    const allNos=[loanNo,...extraLoans];
+    const groupId=allNos.length>1?(loanNo+'_grp_'+Date.now()):null;
+    const ts=Date.now();
 
     try{
-      await set(ref(db,'loans/'+loanNo),{loanNo,scheme,fund,name,amount,checkedBy,remarks,timestamp:Date.now(),editCount:0});
-      await set(ref(db,'ongoing/'+loanNo),null);
+      for(const ln of allNos){
+        const rec={loanNo:ln,scheme,fund,name,amount,checkedBy:resolvedChecker,remarks,timestamp:ts,editCount:0};
+        if(groupId) rec._groupId=groupId;
+        await set(ref(db,'loans/'+ln),rec);
+        if(latestOngoing[ln]) await set(ref(db,'ongoing/'+ln),null);
+      }
       justAddedLoanNo=loanNo; closeCompleteModal();
       document.getElementById('popupLoanNo').textContent=`Loan # ${loanNo}`; showPopup('successPopup',2800);
-      notifyVerified([loanNo], checkedBy);
-      notifyCDSMembers(loanNo, checkedBy, currentUser());
+      notifyVerified(allNos, resolvedChecker);
+      notifyCDSMembers(loanNo, resolvedChecker, currentUser());
       if(document.getElementById('loanNo').value.trim()===loanNo){ ['loanNo','name','amount','remarks'].forEach(id=>document.getElementById(id).value=''); SCHEME.resetForm(); checkLoanStatus(); }
     }catch(e){mMsg.textContent='Error: '+e.message;}
   };
@@ -2850,8 +2906,31 @@
       const eSel=document.getElementById('e_checkedBy');
       if(eSel){ eSel.innerHTML='<option value="">— Select auditor —</option>'+USERS.map(u=>`<option value="${u.name}">${u.name}</option>`).join(''); eSel.value=loan.checkedBy||''; }
     }
+    // Show/pre-fill extra loan numbers for CDS
+    const eExtraWrap=document.getElementById('e_cdsExtraLoansWrap');
+    const eExtraList=document.getElementById('e_extraLoanList');
+    if(eExtraWrap && eExtraList){
+      if(loan.scheme==='CDS'){
+        eExtraWrap.classList.add('visible');
+        eExtraList.innerHTML='';
+        // Find all linked loan numbers from the same group
+        const groupId=loan._groupId;
+        const linkedNos = groupId
+          ? Object.values(latestVerified).filter(r=>r._groupId===groupId&&r.loanNo!==loanNo).map(r=>r.loanNo)
+          : (Array.isArray(loan.linkedLoanNos)?loan.linkedLoanNos.filter(n=>n!==loanNo):[]);
+        linkedNos.forEach(ln=>{
+          CDS_LOANS.addRow('e_extraLoanList');
+          const rows=eExtraList.querySelectorAll('.cds-extra-loan-row');
+          const lastInput=rows[rows.length-1].querySelector('input');
+          if(lastInput) lastInput.value=ln;
+        });
+      } else {
+        eExtraWrap.classList.remove('visible');
+        eExtraList.innerHTML='';
+      }
+    }
     document.getElementById('editModal').style.display='flex'; };
-  window.closeEditModal=function(){document.getElementById('editModal').style.display='none';editTargetLoanNo=null;};
+  window.closeEditModal=function(){document.getElementById('editModal').style.display='none';editTargetLoanNo=null;const el=document.getElementById('e_extraLoanList');if(el)el.innerHTML='';const ew=document.getElementById('e_cdsExtraLoansWrap');if(ew)ew.classList.remove('visible');};
 
   window.revertToOngoing=async function(){
     const loanNo=editTargetLoanNo;
@@ -2908,7 +2987,30 @@
       const FIELDS=[{key:'scheme',label:'scheme'},{key:'fund',label:'fund'},{key:'name',label:'name'},{key:'amount',label:'amount'},{key:'checkedBy',label:'checkedBy'},{key:'remarks',label:'remarks'}];
       const newVals={scheme,fund,name,amount,checkedBy,remarks};
       const changes=FIELDS.filter(f=>String(existing[f.key]||'')!==String(newVals[f.key]||'')).map(f=>({field:f.label,from:String(existing[f.key]||''),to:String(newVals[f.key]||'')}));
-      await set(ref(db,'loans/'+loanNo),{...existing,scheme,fund,name,amount,checkedBy,remarks,editCount,lastEditedAt:ts,lastEditedBy:editor});
+
+      // Handle extra loan numbers for CDS
+      const extraLoans = scheme==='CDS' ? CDS_LOANS.getLoans('e_extraLoanList').filter(l=>l&&l!==loanNo) : [];
+      const allNos=[loanNo,...extraLoans];
+      const groupId=allNos.length>1?(existing._groupId||(loanNo+'_grp_'+ts)):existing._groupId||null;
+
+      // Also update existing grouped records that are being removed from the group
+      if(existing._groupId){
+        const oldGroupMembers=Object.entries(latestVerified).filter(([k,v])=>v._groupId===existing._groupId&&k!==loanNo).map(([k])=>k);
+        for(const oldLn of oldGroupMembers){
+          if(!extraLoans.includes(oldLn)){
+            // Remove group membership from records no longer in the group
+            const oldRec=latestVerified[oldLn];
+            if(oldRec) await set(ref(db,'loans/'+oldLn),{...oldRec,_groupId:null});
+          }
+        }
+      }
+      // Save primary record
+      await set(ref(db,'loans/'+loanNo),{...existing,scheme,fund,name,amount,checkedBy,remarks,editCount,lastEditedAt:ts,lastEditedBy:editor,_groupId:groupId||null});
+      // Save/update extra loan records
+      for(const ln of extraLoans){
+        const exRec=latestVerified[ln]||{loanNo:ln,editCount:0};
+        await set(ref(db,'loans/'+ln),{...exRec,scheme,fund,name,amount,checkedBy,remarks,editCount:(exRec.editCount||0)+1,lastEditedAt:ts,lastEditedBy:editor,_groupId:groupId,timestamp:exRec.timestamp||ts});
+      }
       await push(ref(db,'editLogs'),{loanNo,editedBy:editor,timestamp:ts,editNumber:editCount,changes,snapshot:{scheme,fund,name,amount,checkedBy,remarks}});
       justEditedLoanNo=loanNo; closeEditModal();
       document.getElementById('popupEditLoanNo').textContent=`Loan # ${loanNo}`; showPopup('editSuccessPopup',3000);
