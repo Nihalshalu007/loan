@@ -1973,7 +1973,7 @@
       row.style.cssText = 'display:flex;align-items:center;gap:6px;';
       row.innerHTML = `
         <input type="text" placeholder="Additional loan number…" autocomplete="off"
-          style="flex:1;padding:10px 12px;font-family:var(--font-body);font-size:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color 0.18s,box-shadow 0.18s,background 0.18s;"
+          style="flex:1;padding:10px 12px;font-family:var(--font-mono);font-size:13px;font-weight:700;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--primary);outline:none;transition:border-color 0.18s,box-shadow 0.18s,background 0.18s;"
           oninput="CDS_LOANS.onInput(this,'${listId}')"
           onfocus="this.style.borderColor='var(--primary-light)';this.style.boxShadow='0 0 0 3px var(--primary-glow)';"
           onblur="CDS_LOANS._applyStatusStyle(this)"
@@ -2001,6 +2001,7 @@
         const uid = row.dataset.uid;
         clearTimeout(this._timers[uid]);
         row.remove();
+        if(typeof refreshPendingHighlight === 'function') refreshPendingHighlight();
       }
     },
 
@@ -3736,8 +3737,30 @@
     return PENDING_LOAN_NUMBERS.includes(String(loanNo).trim());
   };
 
+  // Track all currently-typed loan numbers (primary + all extra lists) for highlight
+  window._plMatchLoanNos = new Set();
+
+  // Check if a loan number is verified, considering _groupId grouped records too
+  function isPendingLoanVerified(ln) {
+    if (latestVerified[ln]) return true;
+    // Check old linkedLoanNos field
+    if (Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln))) return true;
+    // Check _groupId grouping (new system)
+    if (Object.values(latestVerified).some(r => r._groupId && r.loanNo !== ln && latestVerified[ln] === undefined &&
+        Object.values(latestVerified).some(r2 => r2._groupId === r._groupId && r2.loanNo === ln))) return true;
+    // Direct groupId check
+    if (latestVerified[ln]) return true;
+    return false;
+  }
+
   // Render the pending loans panel
-  function renderPendingLoans() {
+  function renderPendingLoans(matchLoanNo) {
+    if (matchLoanNo !== undefined) {
+      if (matchLoanNo) window._plMatchLoanNos.add(String(matchLoanNo).trim());
+      else window._plMatchLoanNos = new Set();
+    }
+    const activeLoanNos = window._plMatchLoanNos;
+
     const grid = document.getElementById('pendingGrid');
     const badge = document.getElementById('plBadge');
     const doneBadge = document.getElementById('plDoneBadge');
@@ -3747,7 +3770,12 @@
     let doneCount = 0, ongoingCount = 0;
 
     const items = PENDING_LOAN_NUMBERS.map(ln => {
-      const isVerified = !!(latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln)));
+      // Verified: direct key, linkedLoanNos, or _groupId sibling
+      const isVerified = !!(latestVerified[ln]) ||
+        Object.values(latestVerified).some(r =>
+          (Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln)) ||
+          (r._groupId && r.loanNo === ln)
+        );
       const isOngoing = !isVerified && !!(latestOngoing[ln]);
       if (isVerified) doneCount++;
       else if (isOngoing) ongoingCount++;
@@ -3772,14 +3800,22 @@
 
     // Grid
     grid.innerHTML = items.map(({ ln, isVerified, isOngoing }) => {
+      const isMatch = activeLoanNos.has(ln);
       let cls = 'pl-chip';
       let icon = '🔵';
       if (isVerified) { cls += ' done'; icon = '✅'; }
       else if (isOngoing) { cls += ' ongoing'; icon = '⏳'; }
+      if (isMatch && !isVerified) { cls += ' match'; icon = '👆'; }
       return `<div class="${cls}" title="Loan #${ln}${isVerified?' — Verified':isOngoing?' — Ongoing':' — Pending'}">
         <span>${ln}</span><span class="pl-chip-icon">${icon}</span>
       </div>`;
     }).join('');
+
+    // Auto-scroll to first matched chip
+    if (activeLoanNos.size > 0) {
+      const matched = grid.querySelector('.pl-chip.match');
+      if (matched) setTimeout(() => matched.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+    }
   }
 
   window.togglePendingLoans = function() {
@@ -3802,47 +3838,78 @@
     window._plWarnTimer = setTimeout(() => toast.classList.remove('show'), 5000);
   }
 
+  // Collect all typed loan numbers from the primary input + ALL extra loan lists
+  function collectAllTypedLoanNos() {
+    const nos = new Set();
+    const primary = (document.getElementById('loanNo') || {}).value;
+    if (primary && primary.trim()) nos.add(primary.trim());
+    ['mainExtraLoanList','m_extraLoanList','e_extraLoanList'].forEach(listId => {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.querySelectorAll('input[type="text"]').forEach(inp => {
+        const v = inp.value.trim();
+        if (v) nos.add(v);
+      });
+    });
+    return nos;
+  }
+
+  // Re-render with all currently typed loan numbers highlighted
+  function refreshPendingHighlight() {
+    window._plMatchLoanNos = collectAllTypedLoanNos();
+    const body = document.getElementById('pendingLoansBody');
+    if (body && body.classList.contains('open')) renderPendingLoans();
+  }
+
   // Override checkLoanStatus to also warn about pending list
   const _origCheckLoanStatus = window.checkLoanStatus;
   window.checkLoanStatus = function() {
     _origCheckLoanStatus && _origCheckLoanStatus();
     clearTimeout(window._plCheckTimer);
     const loanNo = (document.getElementById('loanNo') || {}).value;
-    if (!loanNo || !loanNo.trim()) return;
+    if (!loanNo || !loanNo.trim()) {
+      window._plMatchLoanNos = collectAllTypedLoanNos();
+      const body = document.getElementById('pendingLoansBody');
+      if (body && body.classList.contains('open')) renderPendingLoans();
+      return;
+    }
     window._plCheckTimer = setTimeout(() => {
       const ln = loanNo.trim();
+      window._plMatchLoanNos = collectAllTypedLoanNos();
+      const body = document.getElementById('pendingLoansBody');
       if (ln && !isPendingLoan(ln)) {
         showPendingWarning(ln, 'Please verify it is the correct loan number.');
-        // Also open panel to show context
-        const body = document.getElementById('pendingLoansBody');
         if (body && !body.classList.contains('open')) {
-          document.getElementById('pendingLoansBody').classList.add('open');
+          body.classList.add('open');
           document.getElementById('plChevron').classList.add('open');
-          renderPendingLoans();
         }
+        renderPendingLoans();
       } else {
         const toast = document.getElementById('plWarningToast');
         if (toast) toast.classList.remove('show');
+        if (ln && isPendingLoan(ln) && body && !body.classList.contains('open')) {
+          body.classList.add('open');
+          document.getElementById('plChevron').classList.add('open');
+        }
+        renderPendingLoans();
       }
     }, 350);
   };
 
-  // Patch CDS_LOANS.checkDuplicate to also check pending list for additional loan numbers
+  // Patch CDS_LOANS.checkDuplicate to also check pending list + highlight chip
   const _origCDSCheckDup = CDS_LOANS.checkDuplicate.bind(CDS_LOANS);
   CDS_LOANS.checkDuplicate = function(input, loanNo, listId, uid) {
     _origCDSCheckDup(input, loanNo, listId, uid);
-    // Add pending list warning after a brief delay (let original run first)
     setTimeout(() => {
       if (!loanNo || !loanNo.trim()) return;
+      // Always refresh highlight with all currently typed loan numbers
+      refreshPendingHighlight();
       if (!isPendingLoan(loanNo.trim())) {
         const statusEl = document.getElementById('status_' + uid);
         const existing = statusEl ? statusEl.textContent : '';
         // Only override if no error/dup status already shown
         if (existing === '✓ OK' || existing === '') {
-          if (statusEl) {
-            statusEl.textContent = '⚠ Not in list';
-            statusEl.style.color = 'var(--warn)';
-          }
+          if (statusEl) { statusEl.textContent = '⚠ Not in list'; statusEl.style.color = 'var(--warn)'; }
           input.classList.remove('status-ok','status-warn','status-error');
           input.classList.add('status-warn');
           this._applyStatusStyle(input);
@@ -3858,11 +3925,15 @@
       _origMergeAndRefresh && _origMergeAndRefresh();
       const body = document.getElementById('pendingLoansBody');
       if (body && body.classList.contains('open')) renderPendingLoans();
-      // Always update badge count
+      // Always update badge count using groupId-aware check
       const total = PENDING_LOAN_NUMBERS.length;
       let doneCount = 0;
       PENDING_LOAN_NUMBERS.forEach(ln => {
-        if (latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln))) doneCount++;
+        if (latestVerified[ln] ||
+            Object.values(latestVerified).some(r =>
+              (Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln)) ||
+              (r._groupId && r.loanNo === ln)
+            )) doneCount++;
       });
       const badge = document.getElementById('plBadge');
       if (badge) { badge.textContent = total - doneCount; badge.classList.toggle('all-done', doneCount === total); }
@@ -3874,7 +3945,11 @@
     const total = PENDING_LOAN_NUMBERS.length;
     let doneCount = 0;
     PENDING_LOAN_NUMBERS.forEach(ln => {
-      if (latestVerified[ln] || Object.values(latestVerified).some(r => Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln))) doneCount++;
+      if (latestVerified[ln] ||
+          Object.values(latestVerified).some(r =>
+            (Array.isArray(r.linkedLoanNos) && r.linkedLoanNos.includes(ln)) ||
+            (r._groupId && r.loanNo === ln)
+          )) doneCount++;
     });
     const badge = document.getElementById('plBadge');
     if (badge) { badge.textContent = total - doneCount; badge.classList.toggle('all-done', doneCount === total); }
