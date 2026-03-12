@@ -2539,11 +2539,10 @@
   function todayKey(){ return dateKey(Date.now()); }
   function isDateToday(k){ return k===todayKey(); }
 
-  // Get all daily counts from verified loans
+  // Get all daily counts from verified loans (counts each individual loan number)
   function getDailyCounts(){
-    const v=allLoans.filter(l=>l._status==='verified'&&l.timestamp);
     const counts={};
-    v.forEach(l=>{ const k=dateKey(l.timestamp); counts[k]=(counts[k]||0)+1; });
+    Object.values(latestVerified).forEach(l=>{ if(l.timestamp){ const k=dateKey(l.timestamp); counts[k]=(counts[k]||0)+1; } });
     return counts;
   }
 
@@ -2567,11 +2566,13 @@
   function updateStats(){
     const v=allLoans.filter(l=>l._status==='verified');
     const o=allLoans.filter(l=>l._status==='ongoing');
-    const todayCount=v.filter(l=>isToday(l.timestamp)).length;
+    // Count every individual loan number verified (additional CDS loans counted separately)
+    const totalVerifiedCount=Object.values(latestVerified).length;
+    const todayCount=Object.values(latestVerified).filter(l=>isToday(l.timestamp)).length;
     const counts=getDailyCounts();
     const lastWorking=getLastWorkingDayCount(counts, todayKey());
 
-    document.getElementById('statTotal').textContent=v.length;
+    document.getElementById('statTotal').textContent=totalVerifiedCount;
     document.getElementById('statOngoing').textContent=o.length;
     document.getElementById('statToday').textContent=todayCount;
 
