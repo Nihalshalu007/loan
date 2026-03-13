@@ -827,6 +827,27 @@
     .pl-progress-fill{height:100%;background:var(--accent);border-radius:100px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
     .pl-warning-toast{display:none;background:var(--warn-light);border:1.5px solid var(--warn-border);color:var(--warn);border-radius:var(--radius-sm);padding:9px 13px;font-size:12px;font-weight:600;margin-bottom:10px;animation:popIn 0.25s ease;}
     .pl-warning-toast.show{display:flex;align-items:center;gap:8px;}
+    .pl-filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+    .pl-filter-pill{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;border:1.5px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all 0.15s;font-family:var(--font-body);display:flex;align-items:center;gap:5px;user-select:none;}
+    .pl-filter-pill:hover{border-color:var(--primary-light);color:var(--primary);}
+    .pl-filter-pill.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 2px 8px var(--primary-glow);}
+    .pl-filter-pill.active.f-verified{background:var(--accent);border-color:var(--accent);box-shadow:0 2px 8px var(--accent-glow);}
+    .pl-filter-pill.active.f-unverified{background:var(--danger);border-color:var(--danger);box-shadow:none;}
+    .pl-filter-count{font-family:var(--font-mono);font-size:10px;opacity:0.85;}
+    #fireworksCanvas{position:fixed;inset:0;pointer-events:none;z-index:9998;width:100%;height:100%;display:none;}
+    #fireworksCanvas.active{display:block;}
+    #celebrationOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity 0.5s;background:rgba(0,0,0,0.35);backdrop-filter:blur(3px);}
+    #celebrationOverlay.show{opacity:1;pointer-events:auto;}
+    .celeb-card{background:linear-gradient(135deg,var(--primary-dark,#0a3560) 0%,#1a6b3c 100%);border:2px solid rgba(255,255,255,0.22);border-radius:24px;padding:44px 52px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.08);animation:celebPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;max-width:460px;width:90%;position:relative;overflow:hidden;}
+    .celeb-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,0.14) 0%,transparent 65%);pointer-events:none;}
+    .celeb-emoji{font-size:68px;display:block;margin-bottom:14px;animation:celebBounce 1.1s ease infinite;}
+    .celeb-title{font-size:30px;font-weight:800;color:#fff;margin-bottom:8px;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-0.5px;}
+    .celeb-sub{font-size:14.5px;color:rgba(255,255,255,0.78);margin-bottom:26px;font-weight:500;line-height:1.5;}
+    .celeb-who{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:22px;font-family:var(--font-mono,monospace);}
+    .celeb-dismiss{background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.32);color:#fff;font-size:13px;font-weight:700;padding:10px 30px;border-radius:100px;cursor:pointer;transition:background 0.15s,transform 0.1s;font-family:'Plus Jakarta Sans',sans-serif;pointer-events:auto;}
+    .celeb-dismiss:hover{background:rgba(255,255,255,0.3);transform:scale(1.04);}
+    @keyframes celebPop{0%{transform:scale(0.4) translateY(50px);opacity:0;}100%{transform:scale(1) translateY(0);opacity:1;}}
+    @keyframes celebBounce{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-12px) scale(1.14);}}
 
     /* ── CDS MULTI-MEMBER CHECKER ── */
     .cds-checker-wrap{display:none;flex-direction:column;gap:8px;}
@@ -1336,6 +1357,11 @@
       <div class="pl-progress-wrap">
         <div class="pl-progress-label"><span>Progress</span><span id="plProgressPct">0%</span></div>
         <div class="pl-progress-bar"><div class="pl-progress-fill" id="plProgressFill" style="width:0%"></div></div>
+      </div>
+      <div class="pl-filter-row">
+        <button class="pl-filter-pill active f-all" onclick="setPLFilter('all',this)">All <span class="pl-filter-count" id="plFcAll">0</span></button>
+        <button class="pl-filter-pill f-unverified" onclick="setPLFilter('unverified',this)">🔵 To Be Verified <span class="pl-filter-count" id="plFcUnverified">0</span></button>
+        <button class="pl-filter-pill f-verified" onclick="setPLFilter('verified',this)">✅ Verified <span class="pl-filter-count" id="plFcVerified">0</span></button>
       </div>
       <div class="pending-grid" id="pendingGrid">
         <div class="pl-empty">Loading…</div>
@@ -2521,7 +2547,18 @@
         const primary=members[0];
         return {...primary, _groupNos: members.map(m=>m.loanNo)};
       });
-      return [...singles, ...grouped];
+      // Also handle ongoing records that store extra loans in the extraLoans array
+      const singlesResolved=singles.map(l=>{
+        if(Array.isArray(l.extraLoans)&&l.extraLoans.length){
+          return {...l, _groupNos:[l.loanNo,...l.extraLoans]};
+        }
+        // Also support linkedLoanNos pattern (verified records)
+        if(Array.isArray(l.linkedLoanNos)&&l.linkedLoanNos.length){
+          return {...l, _groupNos:[l.loanNo,...l.linkedLoanNos]};
+        }
+        return l;
+      });
+      return [...singlesResolved, ...grouped];
     }
 
     allLoans=[...groupLoans(ongoingRaw),...groupLoans(verifiedRaw)];
@@ -3180,7 +3217,7 @@
   window.setFilter=function(el){ document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); activeFilter=el.dataset.filter; currentPage=1; applyFilters(); };
   window.applyFilters=function(){
     const q=document.getElementById('searchBox').value.toLowerCase();
-    filteredLoans=allLoans.filter(l=>{ let mf=true; if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; else if(activeFilter==='__verified__') mf=l._status==='verified'; else if(activeFilter!=='all') mf=l.checkedBy===activeFilter||l.startedBy===activeFilter; const ms=!q||[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme,l.fund].some(v=>String(v||'').toLowerCase().includes(q)); return mf&&ms; });
+    filteredLoans=allLoans.filter(l=>{ let mf=true; if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; else if(activeFilter==='__verified__') mf=l._status==='verified'; else if(activeFilter!=='all'){ const checkerNames=(l.checkedBy||l.startedBy||'').split(',').map(s=>s.trim()); mf=checkerNames.includes(activeFilter); } const ms=!q||[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme,l.fund].some(v=>String(v||'').toLowerCase().includes(q)); return mf&&ms; });
     sortLoans(); renderTable();
   };
   window.sortTable=function(key){if(sortKey===key)sortAsc=!sortAsc;else{sortKey=key;sortAsc=true;}sortLoans();renderTable();};
@@ -3265,7 +3302,7 @@
   window.exportCSV=function(){
     if(!filteredLoans.length){alert('No data to export.');return;}
     const h=['Loan No','Scheme','Fund','Name','Amount','Checked By','Remarks','Time','Status','Edit Count'];
-    const rows=filteredLoans.map(l=>[l.loanNo||'',l.scheme||'',l.fund||'',l.name||'',l.amount||'',l.checkedBy||l.startedBy||'','"'+(l.remarks||'').replace(/"/g,'""')+'"',l.timestamp?formatDate(l.timestamp):'',l._status||'',l.editCount||0]);
+    const rows=filteredLoans.map(l=>{const allNos=Array.isArray(l._groupNos)&&l._groupNos.length>1?l._groupNos:[l.loanNo||''];return['"'+allNos.join(', ')+'"',l.scheme||'',l.fund||'',l.name||'',l.amount||'','"'+(l.checkedBy||l.startedBy||'').replace(/"/g,'""')+'"','"'+(l.remarks||'').replace(/"/g,'""')+'"',l.timestamp?formatDate(l.timestamp):'',l._status||'',l.editCount||0];});
     const csv=[h,...rows].map(r=>r.join(',')).join('\n');
     const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`ksbcdc_audit_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
@@ -3878,6 +3915,15 @@
     return false;
   }
 
+  // Active filter for pending loans panel
+  window._plFilter = 'all';
+  window.setPLFilter = function(f, el) {
+    window._plFilter = f;
+    document.querySelectorAll('.pl-filter-pill').forEach(p => p.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderPendingLoans();
+  };
+
   // Render the pending loans panel
   function renderPendingLoans(matchLoanNo) {
     if (matchLoanNo !== undefined) {
@@ -3923,8 +3969,29 @@
     badge.classList.toggle('all-done', remaining === 0);
     doneBadge.style.display = remaining === 0 ? 'inline-flex' : 'none';
 
+    // Update filter pill counts
+    // "To Be Verified" = ongoing + plain pending (anything not yet verified)
+    const unverifiedCount = total - doneCount;
+    const fcAll = document.getElementById('plFcAll');
+    const fcUnverified = document.getElementById('plFcUnverified');
+    const fcVerified = document.getElementById('plFcVerified');
+    if (fcAll) fcAll.textContent = total;
+    if (fcUnverified) fcUnverified.textContent = unverifiedCount;
+    if (fcVerified) fcVerified.textContent = doneCount;
+
+    // Apply active filter:
+    // 'all'        → show everything
+    // 'unverified' → ongoing + pending (not yet verified) — correct logic
+    // 'verified'   → verified only
+    const _filter = window._plFilter || 'all';
+    const filteredItems = _filter === 'verified'
+      ? items.filter(i => i.isVerified)
+      : _filter === 'unverified'
+        ? items.filter(i => !i.isVerified)   // includes ongoing AND plain pending
+        : items;
+
     // Grid
-    grid.innerHTML = items.map(({ ln, isVerified, isOngoing }) => {
+    grid.innerHTML = filteredItems.length ? filteredItems.map(({ ln, isVerified, isOngoing }) => {
       const isMatch = activeLoanNos.has(ln);
       let cls = 'pl-chip';
       let icon = '🔵';
@@ -3934,7 +4001,7 @@
       return `<div class="${cls}" title="Loan #${ln}${isVerified?' — Verified':isOngoing?' — Ongoing':' — Pending'}">
         <span>${ln}</span><span class="pl-chip-icon">${icon}</span>
       </div>`;
-    }).join('');
+    }).join('') : `<div class="pl-empty">No loans in this category.</div>`;
 
     // Auto-scroll to first matched chip
     if (activeLoanNos.size > 0) {
@@ -4094,6 +4161,86 @@
 
   // ════════════════════════════════════════════════════
 
+  // ════════════════════════════════════════════════════
+  // ── FIREWORKS & CELEBRATION SYSTEM ───────────────────
+  // ════════════════════════════════════════════════════
+  (function() {
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let particles = [], animId = null, fwActive = false;
+    function resize() { if (!canvas) return; canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    function randomColor() { return ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#f72585','#c77dff','#ffb703','#00f5d4','#ff9f1c','#fff'][Math.floor(Math.random()*10)]; }
+    function spawnBurst(x, y) {
+      const count = 90 + Math.floor(Math.random()*50);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI*2/count)*i + Math.random()*0.3, speed = 3 + Math.random()*7;
+        particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, alpha:1, color:randomColor(), r:2.5+Math.random()*2.5, decay:0.012+Math.random()*0.01, gravity:0.12+Math.random()*0.08, trail:[] });
+      }
+    }
+    function tick() {
+      if (!ctx) return;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => {
+        p.trail.push({x:p.x,y:p.y,alpha:p.alpha});
+        if (p.trail.length>5) p.trail.shift();
+        p.trail.forEach((t,i) => { ctx.beginPath(); ctx.arc(t.x,t.y,p.r*(i/p.trail.length)*0.7,0,Math.PI*2); ctx.fillStyle=p.color; ctx.globalAlpha=t.alpha*(i/p.trail.length)*0.4; ctx.fill(); });
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.color; ctx.globalAlpha=p.alpha; ctx.fill(); ctx.globalAlpha=1;
+        p.vy+=p.gravity; p.vx*=0.98; p.x+=p.vx; p.y+=p.vy; p.alpha-=p.decay;
+      });
+      particles = particles.filter(p=>p.alpha>0);
+      if (particles.length>0||fwActive) animId=requestAnimationFrame(tick); else canvas.classList.remove('active');
+    }
+    let burstInterval=null;
+    window.startFireworks = function(durationMs) {
+      if (!canvas||!ctx) return;
+      fwActive=true; canvas.classList.add('active'); resize();
+      function burst() { const x=canvas.width*(0.1+Math.random()*0.8), y=canvas.height*(0.05+Math.random()*0.55); spawnBurst(x,y); }
+      burst(); burst();
+      burstInterval = setInterval(()=>{ burst(); if(Math.random()>0.5) burst(); }, 420);
+      if(animId) cancelAnimationFrame(animId); tick();
+      setTimeout(()=>{ fwActive=false; clearInterval(burstInterval); }, durationMs||7000);
+    };
+
+    let _celebShown=false, _prevRemaining=null;
+    window.showCelebration = function(who) {
+      if (_celebShown) return; _celebShown=true;
+      const overlay=document.getElementById('celebrationOverlay');
+      if (overlay) { overlay.classList.add('show'); window.startFireworks(8000); setTimeout(()=>dismissCelebration(), 12000); }
+    };
+    window.dismissCelebration = function() {
+      const overlay=document.getElementById('celebrationOverlay');
+      if (overlay) overlay.classList.remove('show');
+      setTimeout(()=>{ _celebShown=false; }, 600);
+    };
+
+    // Watch badge — fire when remaining hits 0
+    function startWatcher() {
+      const badge=document.getElementById('plBadge'); if(!badge) return;
+      new MutationObserver(()=>{
+        const val=parseInt(badge.textContent);
+        if (!isNaN(val) && _prevRemaining!==null && _prevRemaining>0 && val===0) {
+          const me=(typeof currentUser==='function')?currentUser():'';
+          window.showCelebration(me);
+          try {
+            push(ref(db,'broadcasts'),{ to:'all', type:'celebration', title:'🎉 All Loans Verified!', message:'Every pending loan has been successfully audited. Outstanding work by the whole team! 🏆', from:me||'System', timestamp:Date.now(), validForMs:30000, expiresAt:Date.now()+30000 });
+          } catch(e){ console.warn('Celebration broadcast failed',e); }
+        }
+        _prevRemaining = isNaN(val)?_prevRemaining:val;
+      }).observe(badge, {childList:true,characterData:true,subtree:true});
+    }
+    setTimeout(startWatcher, 3000);
+  })();
+
+  // Patch broadcast popup to handle 'celebration' type
+  const _origShowBC = window.showBroadcastPopup;
+  window.showBroadcastPopup = function(type,title,message,duration,from) {
+    if (type==='celebration') { window.showCelebration(); return; }
+    _origShowBC&&_origShowBC(type,title,message,duration,from);
+  };
+
+  // ════════════════════════════════════════════════════
+
 </script>
 
 <!-- BROADCAST OVERLAY POPUP -->
@@ -4147,5 +4294,19 @@
     <button class="btn-notif-send" onclick="sendAdminNotif()">📢 Send</button>
   </div>
 </div>
+
+<!-- FIREWORKS CANVAS -->
+<canvas id="fireworksCanvas"></canvas>
+
+<!-- CELEBRATION OVERLAY -->
+<div id="celebrationOverlay">
+  <div class="celeb-card">
+    <span class="celeb-emoji">🎉</span>
+    <div class="celeb-title">All Loans Verified!</div>
+    <div class="celeb-sub">Every pending loan has been successfully audited.<br>Outstanding work by the whole team! 🏆</div>
+    <button class="celeb-dismiss" onclick="dismissCelebration()">🎊 Awesome!</button>
+  </div>
+</div>
+
 </body>
 </html>
