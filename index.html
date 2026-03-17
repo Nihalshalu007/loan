@@ -3217,7 +3217,17 @@
   window.setFilter=function(el){ document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); activeFilter=el.dataset.filter; currentPage=1; applyFilters(); };
   window.applyFilters=function(){
     const q=document.getElementById('searchBox').value.toLowerCase();
-    filteredLoans=allLoans.filter(l=>{ let mf=true; if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; else if(activeFilter==='__verified__') mf=l._status==='verified'; else if(activeFilter!=='all'){ const checkerNames=(l.checkedBy||l.startedBy||'').split(',').map(s=>s.trim()); mf=checkerNames.includes(activeFilter); } const ms=!q||[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme,l.fund].some(v=>String(v||'').toLowerCase().includes(q)); return mf&&ms; });
+    filteredLoans=allLoans.filter(l=>{ 
+      let mf=true; 
+      if(activeFilter==='__ongoing__') mf=l._status==='ongoing'; 
+      else if(activeFilter==='__verified__') mf=l._status==='verified'; 
+      else if(activeFilter!=='all'){ const checkerNames=(l.checkedBy||l.startedBy||'').split(',').map(s=>s.trim()); mf=checkerNames.includes(activeFilter); } 
+      // Check primary loan no, additional loan nos (_groupNos), and other fields
+      const searchFields=[l.loanNo,l.name,l.checkedBy,l.startedBy,l.remarks,l.amount,l.scheme,l.fund];
+      const additionalNos=Array.isArray(l._groupNos)?l._groupNos:[];
+      const ms=!q||searchFields.concat(additionalNos).some(v=>String(v||'').toLowerCase().includes(q)); 
+      return mf&&ms; 
+    });
     sortLoans(); renderTable();
   };
   window.sortTable=function(key){if(sortKey===key)sortAsc=!sortAsc;else{sortKey=key;sortAsc=true;}sortLoans();renderTable();};
