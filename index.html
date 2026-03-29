@@ -2659,13 +2659,14 @@
     const container=document.getElementById('dhContent');
     if(!container) return;
 
-    // Determine date range: from earliest record to today
-    const today=new Date(); today.setHours(23,59,59,999);
-    const allKeys=Object.keys(counts).sort();
+    // Determine date range: from earliest record to March 16 (cutoff)
+    const cutoff=new Date('2026-03-16'); cutoff.setHours(23,59,59,999);
+    const today=cutoff;
+    const allKeys=Object.keys(counts).filter(k=>k<='2026-03-16').sort();
     if(!allKeys.length){ container.innerHTML='<div class="dh-empty">📋 No verified records yet.</div>'; document.getElementById('dhMeta').textContent=''; document.getElementById('dhFooterStats').textContent=''; document.getElementById('dhShowMore').style.display='none'; return; }
 
     const earliest=new Date(allKeys[0]); earliest.setHours(0,0,0,0);
-    const todayK=todayKey();
+    const todayK='2026-03-16'; // cutoff date — treat as last day
 
     // Build array of all days from earliest to today
     const days=[];
